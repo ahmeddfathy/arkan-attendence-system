@@ -82,3 +82,6 @@ Route::middleware(['auth', 'role:manager,employee'])->group(function () {
     Route::get('leaves/create', [LeaveController::class, 'create'])->name('leaves.create');
     Route::post('leaves', [LeaveController::class, 'store'])->name('leaves.store');
 });
+
+
+hello hello hello hello
