@@ -1,7 +1,7 @@
 <head>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* خلفية مريحة */
+
         body {
             background:white;
             font-family: 'Poppins', sans-serif;
@@ -25,7 +25,7 @@
             position: relative;
         }
 
-        /* تأثيرات الحركية عند تحميل الفورم */
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -37,7 +37,7 @@
             }
         }
 
-        /* عنوان */
+
         .login-form h1 {
             font-size: 26px;
             margin-bottom: 20px;
@@ -57,7 +57,6 @@
             }
         }
 
-        /* تصميم الحقول */
         .login-form .form-control {
             background: #f9f9f9;
             border: 1px solid #ddd;
@@ -75,7 +74,7 @@
             transform: scale(1.02);
         }
 
-        /* الزر */
+
         .login-form .btn {
             background: linear-gradient(to right, #6a11cb, #2575fc);
             border: none;
@@ -94,7 +93,7 @@
             transform: translateY(-3px);
         }
 
-        /* الروابط */
+
         .login-form .form-actions a {
             color: #3498db;
             text-decoration: none;
@@ -120,7 +119,33 @@
 </head>
 
 <body>
+
     <form method="POST" action="{{ route('login') }}" class="login-form">
+    @if ($errors->any())
+    <div id="error-alert" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    
+    <script>
+        setTimeout(() => {
+            const errorAlert = document.getElementById('error-alert');
+            if (errorAlert) {
+
+                errorAlert.classList.remove('show');
+                errorAlert.classList.add('fade');
+
+                setTimeout(() => errorAlert.remove(), 500);
+            }
+        }, 10000);
+    </script>
+@endif
+
         @csrf
         <h1>  welcom again!</h1>
 

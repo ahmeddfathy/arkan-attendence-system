@@ -32,6 +32,11 @@ class AttendanceController extends Controller
     /**
      * Store a newly created attendance record in storage.
      */
+    public function show($id)
+    {
+        $attendance = Attendance::with('user')->findOrFail($id); // Get the attendance record with user info
+        return view('attendances.show', compact('attendance')); // Return the show view
+    }
     public function store(Request $request)
     {
         // Get the authenticated user
@@ -53,7 +58,11 @@ class AttendanceController extends Controller
         $macData = $macController->getMacAddresses()->getData();
 
         if (!isset($macData->is_connected_to_router) || !$macData->is_connected_to_router) {
-            return response()->json('You must be connected to the network to register attendance.');
+
+            return view('errors.custom', [
+                'errorTitle' => 'Network Error',
+                'errorMessage' => 'You must be connected to the network to register attendance.'
+            ]);
         }
 
         // Validate the data
@@ -69,7 +78,11 @@ class AttendanceController extends Controller
 
         if ($existingAttendance) {
             // If the user has already registered today, return a response
-            return response()->json('You have already registered your attendance for today.');
+            
+            return view('errors.custom', [
+                'errorTitle' => 'Duplicate Entry',
+                'errorMessage' => 'You have already registered your attendance for today.'
+            ]);
         }
 
         // If not, create a new attendance record
@@ -81,6 +94,11 @@ class AttendanceController extends Controller
 
     }
 
-
+    public function destroy($id)
+    {
+        $attendance = Attendance::findOrFail($id); // Find the attendance record by ID
+        $attendance->delete(); // Delete the record
+        return redirect()->route('attendances.index')->with('success', 'Attendance record deleted successfully.');
+    }
 
 }

@@ -1,13 +1,5 @@
-<head>
-<style>
-        a{
-            text-decoration: none;
-        }
-    </style>
-</head>
-
-<footer class="footer mt-auto">
-    <div class="container">
+<footer class="footer">
+    <div class="container py-4">
         <div class="row">
             <div class="col-md-4 mb-4 mb-md-0" data-aos="fade-up">
                 <h5>About Arkan</h5>

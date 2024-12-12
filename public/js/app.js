@@ -1,17 +1,9 @@
-import './bootstrap';
-
-// Initialize AOS
-AOS.init({
-    duration: 1000,
-    once: true
-});
-
 // Toast configuration
 toastr.options = {
     closeButton: true,
     progressBar: true,
     positionClass: "toast-top-right",
-    timeOut: 20000,
+    timeOut: 3000,
     extendedTimeOut: 1000,
     preventDuplicates: true,
     newestOnTop: true,
@@ -29,13 +21,13 @@ function checkDuplicateRequest(formData, type) {
     existingRequests.forEach(row => {
         if (type === 'absence') {
             const date = row.children[0].textContent;
-            if (date === formData.get('absence_date') &&
+            if (date === formData.get('absence_date') && 
                 row.children[2].textContent.includes('pending')) {
                 isDuplicate = true;
             }
         } else if (type === 'permission') {
             const datetime = row.children[0].textContent;
-            if (datetime === formData.get('request_datetime') &&
+            if (datetime === formData.get('request_datetime') && 
                 row.children[3].textContent.includes('pending')) {
                 isDuplicate = true;
             }
@@ -49,28 +41,18 @@ function checkDuplicateRequest(formData, type) {
 document.querySelectorAll('form').forEach(form => {
     form.addEventListener('submit', function(event) {
         const formData = new FormData(this);
-
+        
         // Check for duplicates on create forms
         if (this.id === 'createAbsenceForm' && checkDuplicateRequest(formData, 'absence')) {
             event.preventDefault();
             toastr.error('You already have a pending request for this date.');
             return;
         }
-
+        
         if (this.id === 'createPermissionForm' && checkDuplicateRequest(formData, 'permission')) {
             event.preventDefault();
             toastr.error('You already have a pending request for this date and time.');
             return;
-        }
-
-        // Validate permission duration
-        if (this.id === 'createPermissionForm' || this.id === 'editPermissionForm') {
-            const duration = parseInt(formData.get('duration_minutes'));
-            if (duration > 180) {
-                event.preventDefault();
-                toastr.error('Permission duration cannot exceed 180 minutes.');
-                return;
-            }
         }
 
         // Show loading spinner
@@ -109,10 +91,4 @@ document.querySelectorAll('.btn-danger').forEach(button => {
             event.preventDefault();
         }
     });
-});
-
-// Initialize tooltips
-const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl);
 });

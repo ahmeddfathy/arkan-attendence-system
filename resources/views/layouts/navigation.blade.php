@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+ <nav class="navbar navbar-expand-lg navbar-dark bg-dark  " style="margin-bottom:20px">
     <div class="container">
         <a class="navbar-brand" href="{{ route('/') }}">
             <span class="brand-text">ARKAN</span>
@@ -10,13 +10,13 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <!-- Home Link -->
+
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('/') ? 'active' : '' }}" href="{{ route('/') }}">Home</a>
                 </li>
 
                 @auth
-                    <!-- Manager-Specific Links -->
+
                     @if(auth()->user()->role == 'manager')
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('attendances.index') ? 'active' : '' }}" href="{{ route('attendances.index') }}">Attendance Records</a>
@@ -26,7 +26,6 @@
                         </li>
                     @endif
 
-                    <!-- Employee-Specific Links -->
                     @if(auth()->user()->role == 'employee')
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('attendances.create') ? 'active' : '' }}" href="{{ route('attendances.create') }}">Mark Attendance</a>
@@ -36,7 +35,7 @@
                         </li>
                     @endif
 
-                    <!-- User Dropdown Menu -->
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
@@ -54,7 +53,7 @@
                         </ul>
                     </li>
                 @else
-                    <!-- Login Link -->
+
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('login') }}">Login</a>
                     </li>

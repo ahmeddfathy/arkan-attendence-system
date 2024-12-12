@@ -34,7 +34,7 @@ class LeaveController extends Controller
 
             $leave->save();
 
-            return redirect()->route('leaves.index')->with('success', 'Leave request created successfully!');
+            return redirect()->route('leaves.index')->with('success', 'CheckOut created successfully!');
         }
 
 
@@ -42,7 +42,10 @@ class LeaveController extends Controller
         $macData = $macController->getMacAddresses()->getData();
 
         if (!isset($macData->is_connected_to_router) || !$macData->is_connected_to_router) {
-            return response()->json('You must be connected to the network to submit a leave request.');
+            return view('errors.custom', [
+                'errorTitle' => 'Netwok Connection',
+                'errorMessage' => 'You Must Connected To Company Network To Register'
+            ]);
         }
 
 
@@ -58,7 +61,10 @@ class LeaveController extends Controller
 
         if ($existingLeave) {
 
-            return response()->json('You have already requested leave today.');
+            return view('errors.custom', [
+                'errorTitle' => 'Duplicate Entry',
+                'errorMessage' => 'You have already registered your Check Out for today.'
+            ]);
         }
 
 
