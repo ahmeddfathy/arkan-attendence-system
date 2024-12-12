@@ -84,4 +84,3 @@ Route::middleware(['auth', 'role:manager,employee'])->group(function () {
 });
 
 
-hello hello hello hello
