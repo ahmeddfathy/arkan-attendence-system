@@ -14,8 +14,6 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('/absence-requests', AbsenceRequestController::class);
     Route::post('/absence-requests/{absenceRequest}/status', [AbsenceRequestController::class, 'updateStatus'])->name('absence-requests.updateStatus');
     Route::resource('/permission-requests', PermissionRequestController::class);
-    Route::post('/permission-requests/respond/{request}', [PermissionRequestController::class, 'updateStatus'])->name('permission-requests.updateStatus');
-
 
 });
 
@@ -40,27 +38,8 @@ Route::middleware([
 
 // Manager-specific routes (attendance and leave management)
 Route::middleware(['auth', 'role:manager'])->group(function () {
-    Route::resource('leaves', LeaveController::class)->names([
-        'index' => 'leaves.index',
-        'create' => 'leaves.create',
-        'store' => 'leaves.store',
-        'show' => 'leaves.show',
-        'edit' => 'leaves.edit',
-        'update' => 'leaves.update',
-        'destroy' => 'leaves.destroy',
-    ]);
-
-
-    Route::resource('attendances', AttendanceController::class)->names([
-        'index' => 'attendances.index',
-        'create' => 'attendances.create',
-        'store' => 'attendances.store',
-        'show' => 'attendances.show',
-        'edit' => 'attendances.edit',
-        'update' => 'attendances.update',
-        'destroy' => 'attendances.destroy',
-    ]);
-
+    Route::resource('leaves', LeaveController::class);
+    Route::resource('attendances', AttendanceController::class);
     Route::get('/manager/permissions', [ManagerPermissionController::class, 'index'])
     ->name('manager.permissions.index');
 Route::put('/manager/permissions/{permission}/response', [ManagerPermissionController::class, 'updateResponse'])
@@ -70,6 +49,12 @@ Route::delete('/manager/permissions/{permission}/response', [ManagerPermissionCo
     Route::patch('/absence-requests/{absenceRequest}/reset-status', [AbsenceRequestController::class, 'resetStatus'])->name('absence-requests.reset-status');
     Route::patch('/absence-requests/{id}/modify', [AbsenceRequestController::class, 'modifyResponse'])->name('absence-requests.modify');
 
+    Route::post('/permission-requests/{permissionRequest}/update-status', [PermissionRequestController::class, 'updateStatus'])
+    ->name('permission-requests.update-status');
+    Route::patch('/permission-requests/{permissionRequest}/reset-status', [PermissionRequestController::class, 'resetStatus'])
+    ->name('permission-requests.reset-status');
+Route::patch('/permission-requests/{permissionRequest}/modify', [PermissionRequestController::class, 'modifyResponse'])
+    ->name('permission-requests.modify');
 });
 
 // Shared routes for both managers and employees
@@ -84,4 +69,3 @@ Route::middleware(['auth', 'role:manager,employee'])->group(function () {
 });
 
 
-hello hello hello hello

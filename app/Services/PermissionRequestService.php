@@ -14,15 +14,75 @@ class PermissionRequestService
     {
         $user = Auth::user();
 
-        $requests = $user->role === 'manager'
-            ? PermissionRequest::with('user')->latest()->paginate(10)
-            : PermissionRequest::where('user_id', $user->id)->latest()->paginate(10);
-    
-        return [
-            'requests' => $requests,
-            'remainingMinutes' => $this->getRemainingMinutes($user->id)
-        ];
+        if ($user->role === 'manager') {
+            return PermissionRequest::with('user')
+                ->latest()
+                ->paginate(10);
+        }
+
+        return PermissionRequest::where('user_id', $user->id)
+            ->latest()
+            ->paginate(10);
     }
+
+    public function createRequestForUser(int $userId, array $data)
+    {
+        $departureTime = Carbon::parse($data['departure_time']);
+        $returnTime = Carbon::parse($data['return_time']);
+        $durationMinutes = $departureTime->diffInMinutes($returnTime);
+        $remainingMinutes = $this->getRemainingMinutes($userId);
+
+        if ($durationMinutes > $remainingMinutes) {
+            return [
+                'success' => false,
+                'message' => "Cannot request more than {$remainingMinutes} minutes remaining."
+            ];
+        }
+
+        PermissionRequest::create([
+            'user_id' => $userId,
+            'departure_time' => $data['departure_time'],
+            'return_time' => $data['return_time'],
+            'minutes_used' => $durationMinutes,
+            'reason' => $data['reason'],
+            'remaining_minutes' => $remainingMinutes - $durationMinutes,
+            'status' => 'pending',
+            'returned_on_time' => false,
+        ]);
+
+        return ['success' => true];
+    }
+
+    public function updateStatus(PermissionRequest $request, array $data)
+    {
+        $updateData = [
+            'status' => $data['status'],
+            'rejection_reason' => $data['status'] === 'rejected' ? $data['rejection_reason'] : null,
+        ];
+
+        $request->update($updateData);
+
+        return ['success' => true];
+    }
+
+
+    public function resetStatus(PermissionRequest $request)
+    {
+        return $request->update([
+            'status' => 'pending',
+            'rejection_reason' => null
+        ]);
+    }
+
+    public function modifyResponse(PermissionRequest $request, array $data)
+    {
+        return $request->update([
+            'status' => $data['status'],
+            'rejection_reason' => $data['status'] === 'rejected' ? $data['rejection_reason'] : null
+        ]);
+    }
+
+
 
     public function getUserRequestsAndLimits()
     {
@@ -128,31 +188,6 @@ class PermissionRequestService
         return $this->getRemainingMinutes($userId) >= $requestedMinutes;
     }
 
-    public function updateStatus(PermissionRequest $request, array $data)
-{
-
-    $updateData = [
-        'status' => $data['status'],
-        'rejection_reason' => $data['status'] === 'rejected' ? $data['rejection_reason'] : null,
-    ];
 
 
-    if ($data['status'] === 'approved') {
-        $departureTime = Carbon::parse($request->departure_time);
-        $returnTime = Carbon::parse($request->return_time);
-        $durationMinutes = $departureTime->diffInMinutes($returnTime);
-
-        $updateData['minutes_used'] = $durationMinutes;
-        $updateData['returned_on_time'] = $data['returned_on_time'] ?? null;
-    }
-
-
-    if (isset($data['minutes_used'])) {
-        $updateData['minutes_used'] = $data['minutes_used'];
-    }
-
-    $request->update($updateData);
-
-    return ['success' => true];
-}
 }

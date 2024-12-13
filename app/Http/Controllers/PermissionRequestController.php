@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\User;
 use App\Models\PermissionRequest;
 use App\Services\PermissionRequestService;
 use Illuminate\Http\Request;
@@ -21,37 +21,49 @@ class PermissionRequestController extends Controller
         $user = Auth::user();
 
         if ($user->role === 'manager') {
-            $data = $this->permissionRequestService->getAllRequests();
-            
+            $requests = $this->permissionRequestService->getAllRequests();
+            $users = User::select('id', 'name')->get();
+
+            // إذا كنت تحتاج حساب المتبقي لكل مستخدم
+            $remainingMinutes = [];
+            foreach ($users as $userData) {
+                $remainingMinutes[$userData->id] = $this->permissionRequestService->getRemainingMinutes($userData->id);
+            }
+
+            return view('permission-requests.index', compact('requests', 'users', 'remainingMinutes'));
         } elseif ($user->role === 'employee') {
-            $data = $this->permissionRequestService->getUserRequestsAndLimits();
-        } else {
-            return redirect()->route('welcome');
+            $requests = $this->permissionRequestService->getAllRequests();
+
+            
+            $remainingMinutes = $this->permissionRequestService->getRemainingMinutes($user->id);
+
+            return view('permission-requests.index', compact('requests', 'remainingMinutes'));
         }
 
-        return view('permission-requests.index', $data);
+        return redirect()->route('welcome');
     }
+
 
     public function store(Request $request)
     {
         $user = Auth::user();
 
-        if ($user->role !== 'employee') {
+        if ($user->role !== 'employee' && $user->role !== 'manager') {
             return redirect()->route('welcome')->with('error', 'Unauthorized action.');
         }
 
         $validated = $request->validate([
             'departure_time' => 'required|date|after:now',
             'return_time' => 'required|date|after:departure_time',
-            'reason' => 'required|string|max:255'
+            'reason' => 'required|string|max:255',
+            'user_id' => 'required_if:role,manager|exists:users,id|nullable'
         ]);
 
-        $validated['user_id'] = $user->id;
-        $validated['status'] = 'pending';
-        $validated['returned_on_time'] = false;
-        $validated['minutes_used'] = 0;
-
-        $result = $this->permissionRequestService->createRequest($validated);
+        if ($user->role === 'manager' && $request->input('user_id') && $request->input('user_id') !== $user->id) {
+            $result = $this->permissionRequestService->createRequestForUser($validated['user_id'], $validated);
+        } else {
+            $result = $this->permissionRequestService->createRequest($validated);
+        }
 
         if (!$result['success']) {
             return redirect()->back()->with('error', $result['message']);
@@ -59,6 +71,39 @@ class PermissionRequestController extends Controller
 
         return redirect()->route('permission-requests.index')
             ->with('success', 'Permission request submitted successfully.');
+    }
+
+    public function resetStatus(PermissionRequest $permissionRequest)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'manager') {
+            return redirect()->route('welcome')->with('error', 'Unauthorized action.');
+        }
+
+        $this->permissionRequestService->resetStatus($permissionRequest);
+
+        return redirect()->route('permission-requests.index')
+            ->with('success', 'Request status reset to pending successfully.');
+    }
+
+    public function modifyResponse(Request $request, PermissionRequest $permissionRequest)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'manager') {
+            return redirect()->route('welcome')->with('error', 'Unauthorized action.');
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'rejection_reason' => 'required_if:status,rejected|nullable|string|max:255'
+        ]);
+
+        $this->permissionRequestService->modifyResponse($permissionRequest, $validated);
+
+        return redirect()->route('permission-requests.index')
+            ->with('success', 'Response modified successfully.');
     }
 
     public function update(Request $request, PermissionRequest $permissionRequest)
@@ -105,24 +150,22 @@ class PermissionRequestController extends Controller
 
 
     public function updateStatus(Request $request, PermissionRequest $permissionRequest)
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        if ($user->role !== 'manager') {
-            return redirect()->route('welcome')->with('error', 'Unauthorized action.');
-        }
-
-        $validated = $request->validate([
-            'status' => 'required|in:approved,rejected',
-            'rejection_reason' => 'required_if:status,rejected|nullable|string|max:255',
-            'returned_on_time' => 'nullable|boolean',
-            'minutes_used' => 'nullable|integer',
-        ]);
-
-
-        $this->permissionRequestService->updateStatus($permissionRequest, $validated);
-
-        return redirect()->route('permission-requests.index')
-            ->with('success', 'Request status updated successfully.');
+    if ($user->role !== 'manager') {
+        return redirect()->route('welcome')->with('error', 'Unauthorized action.');
     }
+
+    $validated = $request->validate([
+        'status' => 'required|in:approved,rejected',
+        'rejection_reason' => 'required_if:status,rejected|nullable|string|max:255',
+    ]);
+
+    $this->permissionRequestService->updateStatus($permissionRequest, $validated);
+
+    return redirect()->route('permission-requests.index')
+        ->with('success', 'Request status updated successfully.');
+}
+
 }

@@ -16,8 +16,9 @@ class PermissionRequest extends Model
         'minutes_used',
         'remaining_minutes',
         'status',
-        'manager_response',
-        'reason'
+        'rejection_reason',
+        'reason',
+        
     ];
 
     protected $casts = [
