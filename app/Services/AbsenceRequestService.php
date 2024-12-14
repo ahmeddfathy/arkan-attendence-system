@@ -7,6 +7,13 @@ use Illuminate\Support\Facades\Auth;
 
 class AbsenceRequestService
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     public function getAllRequests()
     {
         $user = Auth::user();
@@ -39,8 +46,6 @@ class AbsenceRequestService
     public function createRequest(array $data)
     {
         $userId = Auth::id();
-
-
         $existingRequest = AbsenceRequest::where('user_id', $userId)
             ->where('absence_date', $data['absence_date'])
             ->first();
@@ -49,13 +54,19 @@ class AbsenceRequestService
             return redirect()->back()->withErrors(['absence_date' => 'You have already requested this day off.']);
         }
 
-        return AbsenceRequest::create([
+        $request = AbsenceRequest::create([
             'user_id' => $userId,
             'absence_date' => $data['absence_date'],
             'reason' => $data['reason'],
             'status' => 'pending'
         ]);
+
+        // Send notification to managers
+        $this->notificationService->createLeaveRequestNotification($request);
+
+        return $request;
     }
+
 
 
     public function updateRequest(AbsenceRequest $request, array $data)
@@ -84,10 +95,15 @@ class AbsenceRequestService
 
     public function updateStatus(AbsenceRequest $request, array $data)
     {
-        return $request->update([
+        $request->update([
             'status' => $data['status'],
             'rejection_reason' => $data['status'] == 'rejected' ? $data['rejection_reason'] : null
         ]);
+
+        // Send notification to employee
+        $this->notificationService->createStatusUpdateNotification($request);
+
+        return $request;
     }
 
 

@@ -30,6 +30,16 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'employee_number',
+        'age',
+        'date_of_birth',
+        'national_id_number',
+        'phone_number',
+        'start_date_of_employment',
+        'last_contract_start_date',
+        'last_contract_end_date',
+        'job_progression',
+        'department',
     ];
 
     /**

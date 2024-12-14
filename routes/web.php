@@ -8,6 +8,10 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AbsenceRequestController;
 use App\Http\Controllers\PermissionRequestController;
 use App\Http\Controllers\ManagerPermissionController;
+use App\Http\Controllers\NotificationController;
+
+
+
 
 Route::get('/welcome', function(){return "hello";}) -> name('welcome');
 Route::middleware(['auth'])->group(function () {
@@ -34,6 +38,7 @@ Route::middleware([
 
     // Move the dashboard route outside the conditional logic
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
 });
 
 // Manager-specific routes (attendance and leave management)
@@ -55,6 +60,7 @@ Route::delete('/manager/permissions/{permission}/response', [ManagerPermissionCo
     ->name('permission-requests.reset-status');
 Route::patch('/permission-requests/{permissionRequest}/modify', [PermissionRequestController::class, 'modifyResponse'])
     ->name('permission-requests.modify');
+
 });
 
 // Shared routes for both managers and employees
@@ -66,6 +72,10 @@ Route::middleware(['auth', 'role:manager,employee'])->group(function () {
     // Leave routes
     Route::get('leaves/create', [LeaveController::class, 'create'])->name('leaves.create');
     Route::post('leaves', [LeaveController::class, 'store'])->name('leaves.store');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
+    Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount']);
+    Route::get('/notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])
+        ->name('notifications.mark-as-read');
 });
 
 

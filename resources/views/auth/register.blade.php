@@ -1,164 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create an Account</title>
+
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
-        /* Background styling */
         body {
-            background: white;
-            font-family: 'Poppins', sans-serif;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+            padding-top: 50px;
         }
 
-        /* Form card styling */
-        .auth-card {
-            background: #ffffff;
-            border-radius: 15px;
-            padding: 30px;
-            max-width: 450px;
-            width: 100%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Title styling */
-        .auth-card h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #333333;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        /* Input fields */
-        .auth-card .form-control {
+        .form-container {
+            background-color: #ffffff;
+            padding: 40px;
             border-radius: 10px;
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            font-size: 14px;
-            padding: 12px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .auth-card .form-control:focus {
-            border-color: #6a11cb;
-            box-shadow: 0 0 8px rgba(106, 17, 203, 0.2);
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            color: #007bff;
+            margin-bottom: 30px;
         }
 
-        /* Button styling */
-        .auth-card .btn {
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-            border: none;
-            padding: 12px 20px;
-            color: #fff;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            width: 100%;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
+        .form-label {
+            font-weight: 500;
+            color: #495057;
         }
 
-        .auth-card .btn:hover {
-            background: linear-gradient(to right, #2575fc, #6a11cb);
-            transform: translateY(-3px);
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            box-shadow: none;
         }
 
-        /* Link styling */
-        .auth-card a {
-            color: #6a11cb;
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.25rem rgba(38, 143, 255, 0.25);
+        }
+
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border-radius: 8px;
+            padding: 10px 20px;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+            color: white;
+        }
+
+        .form-footer a {
+            color: #007bff;
             text-decoration: none;
-            font-size: 14px;
-            transition: color 0.3s ease;
         }
 
-        .auth-card a:hover {
-            color: #2575fc;
-        }
-
-        /* Additional spacing */
-        .auth-card .mt-4 {
-            margin-top: 1.5rem;
-        }
-
-        @media (max-width: 768px) {
-            .auth-card {
-                padding: 20px;
-            }
+        .form-footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
-
 <body>
 
-    <div class="auth-card">
-    
-        <h1>{{ __('Create an Account') }}</h1>
+    <div class="container">
+        <div class="form-container mx-auto col-lg-8 col-md-10 col-sm-12">
+            <h1>{{ __('Create an Account') }}</h1>
 
-        <x-validation-errors class="mb-4" />
+            <x-validation-errors class="mb-4" />
 
-        <form method="POST" action="{{ route('register') }}">
-            @csrf
+            <form method="POST" action="{{ route('register') }}">
+                @csrf
 
-            <div>
-                <x-label for="name" value="{{ __('Name') }}" />
-                <x-input id="name" class="form-control" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            </div>
-
-            <div class="mt-4">
-                <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="form-control" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            </div>
-
-            <div class="mt-4">
-                <x-label for="password" value="{{ __('Password') }}" />
-                <x-input id="password" class="form-control" type="password" name="password" required autocomplete="new-password" />
-            </div>
-
-            <div class="mt-4">
-                <x-label for="password_confirmation" value="{{ __('Confirm Password') }}" />
-                <x-input id="password_confirmation" class="form-control" type="password" name="password_confirmation" required autocomplete="new-password" />
-            </div>
-
-            @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
-            <div class="mt-4">
-                <x-label for="terms">
-                    <div class="d-flex align-items-center">
-                        <x-checkbox name="terms" id="terms" required />
-                        <span class="ms-2 text-muted">
-                            {!! __('I agree to the :terms_of_service and :privacy_policy', [
-                            'terms_of_service' => '<a target="_blank" href="'.route('terms.show').'">'.__('Terms of Service').'</a>',
-                            'privacy_policy' => '<a target="_blank" href="'.route('policy.show').'">'.__('Privacy Policy').'</a>',
-                            ]) !!}
-                        </span>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="name" class="form-label">{{ __('Name') }}</label>
+                        <x-input id="name" class="form-control" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
                     </div>
-                </x-label>
-            </div>
-            @endif
 
-            <div class="d-flex justify-content-between align-items-center mt-4">
-                <a href="{{ route('login') }}">{{ __('Already registered? Login here') }}</a>
-                <x-button class="btn">
-                    {{ __('Register') }}
-                </x-button>
-            </div>
-        </form>
+                    <div class="col-md-6">
+                        <label for="email" class="form-label">{{ __('Email') }}</label>
+                        <x-input id="email" class="form-control" type="email" name="email" :value="old('email')" required autocomplete="username" />
+                    </div>
+                </div>
 
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <label for="password" class="form-label">{{ __('Password') }}</label>
+                        <x-input id="password" class="form-control" type="password" name="password" required autocomplete="new-password" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="password_confirmation" class="form-label">{{ __('Confirm Password') }}</label>
+                        <x-input id="password_confirmation" class="form-control" type="password" name="password_confirmation" required autocomplete="new-password" />
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <label for="employee_number" class="form-label">Employee Number</label>
+                        <input id="employee_number" class="form-control" type="text" name="employee_number" value="{{ old('employee_number') }}" required placeholder="Enter your employee number">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="age" class="form-label">Age</label>
+                        <input id="age" class="form-control" type="number" name="age" value="{{ old('age') }}" required placeholder="Enter your age">
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <label for="date_of_birth" class="form-label">Date of Birth</label>
+                        <input id="date_of_birth" class="form-control" type="date" name="date_of_birth" value="{{ old('date_of_birth') }}" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="national_id_number" class="form-label">National ID Number</label>
+                        <input id="national_id_number" class="form-control" type="text" name="national_id_number" value="{{ old('national_id_number') }}" required placeholder="Enter your national ID number">
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <label for="phone_number" class="form-label">Phone Number</label>
+                        <input id="phone_number" class="form-control" type="text" name="phone_number" value="{{ old('phone_number') }}" required placeholder="Enter your phone number">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="start_date_of_employment" class="form-label">Start Date of Employment</label>
+                        <input id="start_date_of_employment" class="form-control" type="date" name="start_date_of_employment" value="{{ old('start_date_of_employment') }}" required>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <label for="last_contract_start_date" class="form-label">Last Contract Start Date</label>
+                        <input id="last_contract_start_date" class="form-control" type="date" name="last_contract_start_date" value="{{ old('last_contract_start_date') }}">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="last_contract_end_date" class="form-label">Last Contract End Date</label>
+                        <input id="last_contract_end_date" class="form-control" type="date" name="last_contract_end_date" value="{{ old('last_contract_end_date') }}">
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <label for="job_progression" class="form-label">Job Progression</label>
+                        <input id="job_progression" class="form-control" type="text" name="job_progression" value="{{ old('job_progression') }}" placeholder="Enter your job progression">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="department" class="form-label">Department</label>
+                        <input id="department" class="form-control" type="text" name="department" value="{{ old('department') }}" placeholder="Enter your department">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-4 form-footer">
+                    <a href="{{ route('login') }}">{{ __('Already registered? Login here') }}</a>
+                    <x-button class="btn">
+                        {{ __('Register') }}
+                    </x-button>
+                </div>
+            </form>
+        </div>
     </div>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+</html>

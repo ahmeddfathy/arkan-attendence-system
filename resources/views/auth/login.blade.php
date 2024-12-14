@@ -1,3 +1,5 @@
+
+
 <head>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -116,7 +118,7 @@
             }
         }
     </style>
-</head>
+</hea>
 
 <body>
 
@@ -131,7 +133,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-    
+
     <script>
         setTimeout(() => {
             const errorAlert = document.getElementById('error-alert');
