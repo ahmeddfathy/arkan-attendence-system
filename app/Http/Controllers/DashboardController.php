@@ -7,6 +7,10 @@ use App\Models\Attendance;
 use App\Models\Leave;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use App\Services\AttendanceReportService;
+
+
+
 
 class DashboardController extends Controller
 {
@@ -38,4 +42,9 @@ class DashboardController extends Controller
         // Default view if no role is set
         return view('welcome');
     }
+
+    public function generateAttendancePDF($userId, AttendanceReportService $reportService)
+{
+    return $reportService->generatePDF($userId);
+}
 }

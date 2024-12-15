@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -67,6 +68,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="container">
@@ -162,6 +164,57 @@
                     </div>
                 </div>
 
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <label for="gender" class="form-label">Gender</label>
+                        <select id="gender" class="form-control" name="gender" required>
+                            <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Male</option>
+                            <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Female</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="address" class="form-label">Address</label>
+                        <input id="address" class="form-control" type="text" name="address" value="{{ old('address') }}" placeholder="Enter your address">
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <label for="education_level" class="form-label">Education Level</label>
+                        <input id="education_level" class="form-control" type="text" name="education_level" value="{{ old('education_level') }}" placeholder="Enter your education level">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="marital_status" class="form-label">Marital Status</label>
+                        <select id="marital_status" class="form-control" name="marital_status">
+                            <option value="" {{ old('marital_status') == '' ? 'selected' : '' }}>Select status</option>
+                            <option value="single" {{ old('marital_status') == 'single' ? 'selected' : '' }}>Single</option>
+                            <option value="married" {{ old('marital_status') == 'married' ? 'selected' : '' }}>Married</option>
+                            <option value="divorced" {{ old('marital_status') == 'divorced' ? 'selected' : '' }}>Divorced</option>
+                            <option value="widowed" {{ old('marital_status') == 'widowed' ? 'selected' : '' }}>Widowed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <label for="number_of_children" class="form-label">Number of Children</label>
+                        <input id="number_of_children" class="form-control" type="number" name="number_of_children" value="{{ old('number_of_children') }}" placeholder="Enter number of children">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="employee_status" class="form-label">Employee Status</label>
+                        <select id="employee_status" class="form-control" name="employee_status">
+                            <option value="" {{ old('employee_status') == '' ? 'selected' : '' }}>Select status</option>
+                            <option value="active" {{ old('employee_status') == 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="inactive" {{ old('employee_status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                            <option value="on_leave" {{ old('employee_status') == 'on_leave' ? 'selected' : '' }}>On Leave</option>
+                        </select>
+                    </div>
+                </div>
+
+
                 <div class="d-flex justify-content-between align-items-center mt-4 form-footer">
                     <a href="{{ route('login') }}">{{ __('Already registered? Login here') }}</a>
                     <x-button class="btn">
@@ -175,4 +228,5 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

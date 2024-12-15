@@ -48,6 +48,8 @@
             <a href="{{ route('leaves.create') }}" class="btn-dashboard">
                 Request Leave
             </a>
+            <a href="{{ route('user.downloadAttendanceReport',  Auth::id()) }}" class="btn btn-primary">Download Attendance Report</a>
+
         </div>
 
 

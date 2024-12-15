@@ -40,6 +40,12 @@ class User extends Authenticatable
         'last_contract_end_date',
         'job_progression',
         'department',
+        'gender',
+        'address',
+        'education_level',
+        'marital_status',
+        'number_of_children',
+        'employee_status',
     ];
 
     /**
@@ -75,4 +81,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function attendanceRecords()
+{
+    return $this->hasMany(AttendanceRecord::class);
+}
+
 }

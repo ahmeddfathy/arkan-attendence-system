@@ -4,12 +4,11 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\MacAddressController;
 use App\Http\Controllers\DashboardController;
-
 use App\Http\Controllers\AbsenceRequestController;
 use App\Http\Controllers\PermissionRequestController;
 use App\Http\Controllers\ManagerPermissionController;
 use App\Http\Controllers\NotificationController;
-
+use App\Http\Controllers\UserController ;
 
 
 
@@ -79,3 +78,12 @@ Route::middleware(['auth', 'role:manager,employee'])->group(function () {
 });
 
 
+Route::get('/users', [UserController::class,'index'])->name('user.index');
+Route::post('/users/import', [UserController::class,'import'])->name('user.import');
+Route::post('/users/import2', [UserController::class,'import2'])->name('user.import2');
+
+use App\Http\Controllers\AttendanceRecordController;
+
+Route::get('/attendance', [AttendanceRecordController::class, 'index'])->name('attendance.index');
+Route::post('/attendance/import', [AttendanceRecordController::class, 'import'])->name('attendance.import');
+Route::get('/user/{id}/attendance-report', [DashboardController::class, 'generateAttendancePDF'])->name('user.downloadAttendanceReport');

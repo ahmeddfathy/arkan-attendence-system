@@ -68,8 +68,11 @@
                 <a href="{{ route('leaves.index') }}" class="btn-dashboard">
                     View Leaves
                 </a>
+            
+
             </div>
         </div>
     </div>
+
 
 @endsection
