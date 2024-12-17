@@ -44,9 +44,13 @@
                         <div class="dropdown-menu dropdown-menu-end notification-dropdown py-0" style="width: 300px; max-height: 400px; overflow-y: auto;">
                             <div class="border-bottom p-2">
                                 <h6 class="mb-0">Notifications</h6>
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" class="form-check-input" id="toggleSound" checked>
+                                    <label class="form-check-label" for="toggleSound">Enable Sound</label>
+                                </div>
                             </div>
                             <div class="notifications-container">
-                                <!-- Notifications will be loaded here -->
+                                <div class="text-center p-3">No notifications available</div>
                             </div>
                         </div>
                     </li>
@@ -68,33 +72,6 @@
                             </li>
                         </ul>
                     </li>
-
-                    @if (Laravel\Jetstream\Jetstream::hasTeamFeatures())
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="teamDropdown" role="button"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                {{ Auth::user()->currentTeam->name }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="teamDropdown">
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('teams.show', Auth::user()->currentTeam->id) }}">Team Settings</a>
-                                </li>
-                                @can('create', Laravel\Jetstream\Jetstream::newTeamModel())
-                                    <li>
-                                        <a class="dropdown-item" href="{{ route('teams.create') }}">Create New Team</a>
-                                    </li>
-                                @endcan
-                                @if (Auth::user()->allTeams()->count() > 1)
-                                    <li><hr class="dropdown-divider"></li>
-                                    @foreach (Auth::user()->allTeams() as $team)
-                                        <li>
-                                            <x-switchable-team :team="$team" component="dropdown-item" />
-                                        </li>
-                                    @endforeach
-                                @endif
-                            </ul>
-                        </li>
-                    @endif
 
                 @else
                     <li class="nav-item">
@@ -145,6 +122,16 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    let lastNotificationId = null; // To track the latest notification ID
+
+    const playNotificationSound = () => {
+        if (document.querySelector('#toggleSound').checked) {
+            const audio = new Audio('/sounds/notification-18-270129.mp3');
+            audio.volume = 0.5; // Adjust volume
+            audio.play();
+        }
+    };
+
     const updateNotifications = () => {
         // Update unread count
         fetch('/notifications/unread-count')
@@ -157,17 +144,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     badge.style.display = 'none';
                 }
-            });
+            })
+            .catch(error => console.error('Error updating unread count:', error));
 
         // Update notification list
         fetch('/notifications')
             .then(response => response.text())
             .then(html => {
-                document.querySelector('.notifications-container').innerHTML = html;
-            });
+                const container = document.querySelector('.notifications-container');
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+
+                // Get the latest notification ID from the new content
+                const latestNotification = tempDiv.querySelector('.notification-item'); // Assuming notifications have this class
+                if (latestNotification) {
+                    const latestNotificationId = latestNotification.dataset.id;
+
+                    // Play sound if a new notification is found
+                    if (lastNotificationId !== latestNotificationId) {
+                        lastNotificationId = latestNotificationId;
+                        // playNotificationSound();
+                    }
+                }
+
+                // Update the DOM with the new notifications
+                container.innerHTML = html;
+
+                // Handle empty state
+                if (!container.innerHTML.trim()) {
+                    container.innerHTML = '<div class="text-center p-3">No notifications available</div>';
+                }
+            })
+            .catch(error => console.error('Error updating notifications:', error));
     };
 
-    // Update notifications every 30 seconds
+    // Initial update and periodic checks every 30 seconds
     updateNotifications();
     setInterval(updateNotifications, 30000);
 
@@ -180,7 +191,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(() => {
                     window.location.href = notificationLink.href;
-                });
+                })
+                .catch(error => console.error('Error marking notification as read:', error));
         }
     });
 });

@@ -1,16 +1,13 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Attendance;
 use App\Models\Leave;
+use App\Models\SalarySheet;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Services\AttendanceReportService;
-
-
-
 
 class DashboardController extends Controller
 {
@@ -32,11 +29,14 @@ class DashboardController extends Controller
                           ? ($presentToday / $totalEmployees) * 100
                           : 0;  // Prevent division by zero
 
+        // استرجاع ملفات PDF الخاصة بالـ user
+        $salaryFiles = SalarySheet::where('user_id', $user->id)->get();
+
         // Check the user's role and return the appropriate view
         if ($user->role == 'manager') {
             return view('dashboard', compact('totalEmployees', 'presentToday', 'checkedOutToday', 'attendanceRate'));
         } elseif ($user->role == 'employee') {
-            return view('profile.dashboard-user');  // Employee dashboard view
+            return view('profile.dashboard-user', compact('salaryFiles'));  // تمرير ملفات المستخدم إلى الـ view
         }
 
         // Default view if no role is set
@@ -44,7 +44,7 @@ class DashboardController extends Controller
     }
 
     public function generateAttendancePDF($userId, AttendanceReportService $reportService)
-{
-    return $reportService->generatePDF($userId);
-}
+    {
+        return $reportService->generatePDF($userId);
+    }
 }

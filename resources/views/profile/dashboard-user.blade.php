@@ -56,4 +56,33 @@
     </div>
 </div>
 
+@if($salaryFiles->count() > 0)
+    <div class="container mt-5">
+        <h3 class="text-center mb-4">Your Salary Sheets</h3>
+        <div class="row justify-content-center">
+            @foreach($salaryFiles as $file)
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">{{ $file->month }}</h5>
+                            <p class="card-text">Click below to view your salary sheet for <strong>{{ $file->month }}</strong>.</p>
+                            <a href="{{ url('/salary-sheet/' . $file->user_id . '/' . $file->month . '/' . basename($file->file_path)) }}"
+                               class="btn btn-primary btn-sm" target="_blank">
+                                View Salary Sheet
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+@else
+    <div class="container mt-5">
+        <div class="alert alert-info text-center" role="alert">
+            <p class="mb-0">No salary sheets available.</p>
+        </div>
+    </div>
+@endif
+
+
 @endsection

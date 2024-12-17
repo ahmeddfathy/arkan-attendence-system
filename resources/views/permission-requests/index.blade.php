@@ -29,13 +29,10 @@
                         <h5 class="mb-0">Permission Requests</h5>
                     </div>
                     <div class="d-flex align-items-center">
-
-
                         @if(Auth::user()->role !== 'manager')
                         <div class="me-3">
-                            <div class="d-flex align-items-center  bg-opacity-25 rounded-pill px-3 py-1" style="background-color: red;">
+                            <div class="d-flex align-items-center bg-opacity-25 rounded-pill px-3 py-1" style="background-color: red;">
                                 <i class="fas fa-hourglass-half me-2"></i>
-
                                 <span>Remaining: {{ $remainingMinutes }} minutes</span>
                             </div>
                         </div>
@@ -92,10 +89,9 @@
                                         <span class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ $request->reason }}">
                                             {{ $request->reason }}
                                         </span>
-
                                     </td>
                                     <td>
-                                            @if($request->status === 'rejected' && $request->rejection_reason)
+                                        @if($request->status === 'rejected' && $request->rejection_reason)
                                         <div class="mt-1">
                                             <small class="text-danger">
                                                 <i class="fas fa-info-circle me-1"></i>
@@ -123,7 +119,10 @@
                                                     <button class="btn btn-sm btn-outline-primary edit-btn"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#editPermissionModal"
-                                                            data-request="{{ json_encode($request) }}">
+                                                            data-id="{{ $request->id }}"
+                                                            data-departure="{{ $request->departure_time }}"
+                                                            data-return="{{ $request->return_time }}"
+                                                            data-reason="{{ $request->reason }}">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
                                                     <form action="{{ route('permission-requests.destroy', $request) }}"
@@ -175,7 +174,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="7" class="text-center py-4 text-muted">
+                                    <td colspan="8" class="text-center py-4 text-muted">
                                         <i class="fas fa-inbox fa-2x mb-3"></i>
                                         <p class="mb-0">No permission requests found</p>
                                     </td>
@@ -194,8 +193,7 @@
     </div>
 </div>
 
-
-<!-- create model -->
+<!-- Create Modal -->
 <div class="modal fade" id="createPermissionModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -222,7 +220,7 @@
                         </div>
                     </div>
 
-                    <div class="mb-4" id="employee_select_container">
+                    <div class="mb-4" id="employee_select_container" style="display: none;">
                         <label for="user_id" class="form-label">Select Employee</label>
                         <select name="user_id" id="user_id" class="form-select">
                             <option value="" disabled selected>Choose an employee...</option>
@@ -271,7 +269,8 @@
         </div>
     </div>
 </div>
-<!-- edit model -->
+
+<!-- Edit Modal -->
 <div class="modal fade" id="editPermissionModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -319,7 +318,8 @@
         </div>
     </div>
 </div>
-<!-- respond model -->
+
+<!-- Respond Modal -->
 <div class="modal fade" id="respondModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -369,7 +369,8 @@
         </div>
     </div>
 </div>
-<!-- modify respond model -->
+
+<!-- Modify Response Modal -->
 <div class="modal fade" id="modifyResponseModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -418,7 +419,6 @@
     </div>
 </div>
 
-
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -426,6 +426,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Handle Edit Button Click
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            // Get data from button attributes
+            const requestId = this.getAttribute('data-id');
+            const departureTime = this.getAttribute('data-departure');
+            const returnTime = this.getAttribute('data-return');
+            const reason = this.getAttribute('data-reason');
+
+            // Set form action URL
+            const form = document.getElementById('editPermissionForm');
+            form.action = `/permission-requests/${requestId}`;
+
+            // Format datetime for input fields
+            const formatDateTime = (dateTimeStr) => {
+                const date = new Date(dateTimeStr);
+                return date.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:mm
+            };
+
+            // Populate form fields
+            document.getElementById('edit_departure_time').value = formatDateTime(departureTime);
+            document.getElementById('edit_return_time').value = formatDateTime(returnTime);
+            document.getElementById('edit_reason').value = reason;
+        });
     });
 
     // Handle status radio changes for both respond and modify modals
@@ -447,27 +473,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-
-    document.addEventListener('DOMContentLoaded', function() {
-    // Handle Edit Permission Modal
-    document.querySelectorAll('.edit-permission-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const requestId = this.dataset.requestId;
-            const departureTime = this.dataset.departureTime;
-            const returnTime = this.dataset.returnTime;
-            const reason = this.dataset.reason;
-
-            const form = document.getElementById('editPermissionForm');
-            form.action = `/permission-requests/${requestId}`;
-
-            // تعبئة الحقول بالقيم الحالية
-            document.getElementById('edit_departure_time').value = departureTime;
-            document.getElementById('edit_return_time').value = returnTime;
-            document.getElementById('edit_reason').value = reason;
-        });
-    });
-});
-
 
     // Handle respond button clicks
     document.querySelectorAll('.respond-btn').forEach(button => {
@@ -511,68 +516,36 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-});
 
-document.addEventListener('DOMContentLoaded', function() {
+    // Handle employee selection for manager requests
+    if (document.getElementById('self_registration')) {
+        document.querySelectorAll('input[name="registration_type"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const userSelect = document.getElementById('user_id');
+                const container = document.getElementById('employee_select_container');
 
-function handleModifyStatusChange() {
-    const radios = document.querySelectorAll('input[name="modify_status"]');
-    const container = document.getElementById('modify_reason_container');
-    const textarea = container.querySelector('textarea');
-
-    radios.forEach(radio => {
-        radio.addEventListener('change', function() {
-            if (this.value === 'rejected') {
-                container.style.display = 'block';
-                textarea.setAttribute('required', 'required');
-            } else {
-                container.style.display = 'none';
-                textarea.removeAttribute('required');
-            }
+                if (this.value === 'self') {
+                    container.style.display = 'none';
+                    userSelect.value = '';
+                } else {
+                    container.style.display = 'block';
+                    userSelect.value = '';
+                }
+            });
         });
+    }
 
-
-        if (radio.checked) {
-            radio.dispatchEvent(new Event('change'));
-        }
-    });
-}
-
-
-handleModifyStatusChange();
-});
-
-
-// Initialize form validation
-const forms = document.querySelectorAll('.modal form');
-forms.forEach(form => {
-    form.addEventListener('submit', function(event) {
-        if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-        form.classList.add('was-validated');
-    });
-});
-
-// Handle employee selection for manager requests
-if (document.getElementById('self_registration')) {
-    document.querySelectorAll('input[name="registration_type"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            const userSelect = document.getElementById('user_id');
-            const container = document.getElementById('employee_select_container');
-
-            if (this.value === 'self') {
-                container.style.display = 'none';
-                userSelect.value = userSelect.querySelector(`option[value="${currentUserId}"]`).value;
-            } else {
-                container.style.display = 'block';
-                userSelect.value = '';
+    // Initialize form validation
+    document.querySelectorAll('.modal form').forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
             }
+            form.classList.add('was-validated');
         });
     });
-}
-
+});
 </script>
 @endpush
 @endsection

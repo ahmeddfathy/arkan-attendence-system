@@ -7,6 +7,7 @@ use App\Services\AbsenceRequestService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Carbon\Carbon;
 
 class AbsenceRequestController extends Controller
 {
@@ -18,67 +19,82 @@ class AbsenceRequestController extends Controller
     }
 
     public function index()
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    if ($user->role === 'manager') {
+        if ($user->role === 'manager') {
+            $requests = $this->absenceRequestService->getAllRequests();
+            $users = User::select('id', 'name')->get();
 
-        $requests = $this->absenceRequestService->getAllRequests();
+            // احسب أيام الغياب لكل مستخدم
+            foreach ($users as $userRecord) {
+                $userRecord->absence_days = $this->absenceRequestService->calculateAbsenceDays($userRecord->id);
+            }
 
-
-        $users = User::select('id', 'name')->get();
-
-
-        return view('absence-requests.index', compact('users', 'requests'));
-    } elseif ($user->role === 'employee') {
-
-        $requests = $this->absenceRequestService->getUserRequests();
-
-
-        return view('absence-requests.index', compact('requests'));
-    } else {
-
-        return redirect()->route('welcome');
-    }
-}
+            return view('absence-requests.index', compact('users', 'requests' ));
+        } elseif ($user->role === 'employee') {
+            $requests = $this->absenceRequestService->getUserRequests();
 
 
+            $absenceDays = $this->absenceRequestService->calculateAbsenceDays($user->id);
 
-public function store(Request $request)
-{
-    $user = Auth::user();
-
-
-    if ($user->role !== 'employee' && $user->role !== 'manager') {
-        return redirect()->route('welcome')->with('error', 'Unauthorized action.');
-    }
-
-
-    $validated = $request->validate([
-        'absence_date' => 'required|date|after:today',
-        'reason' => 'required|string|max:255',
-
-        'user_id' => 'required_if:role,manager|exists:users,id|nullable'
-    ]);
-
-
-    if ($user->role === 'manager') {
-
-        if ($request->input('user_id') && $request->input('user_id') !== $user->id) {
-
-            $this->absenceRequestService->createRequestForUser($validated['user_id'], $validated);
+            return view('absence-requests.index', compact('requests', 'absenceDays'));
         } else {
+            return redirect()->route('welcome');
+        }
+    }
 
+
+
+    public function store(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'employee' && $user->role !== 'manager') {
+            return redirect()->route('welcome')->with('error', 'Unauthorized action.');
+        }
+
+        // تحديد المستخدم المستهدف بناءً على دور المدير أو الموظف
+        $targetUserId = $user->role === 'manager' && $request->input('user_id')
+            ? $request->input('user_id')
+            : $user->id;
+
+        // حساب عدد الأيام الحالية (pending أو approved) للسنة الحالية
+        $pendingOrApprovedDays = AbsenceRequest::where('user_id', $targetUserId)
+            ->whereIn('status', ['pending', 'approved'])
+            ->whereYear('absence_date', Carbon::now()->year) // فقط للسنة الحالية
+            ->count();
+
+        if ($pendingOrApprovedDays >= 5) {
+            return redirect()->back()->with('error', 'You cannot request more than 5 absence days in a year while your pending or approved requests exist.');
+        }
+
+        // تحقق من صحة البيانات المدخلة
+        $validated = $request->validate([
+            'absence_date' => 'required|date|after:today',
+            'reason' => 'required|string|max:255',
+            'user_id' => 'required_if:role,manager|exists:users,id|nullable',
+        ]);
+
+        // التحقق من أن الطلب الجديد لا يتجاوز الحد
+        if ($pendingOrApprovedDays + 1 > 5) {
+            return redirect()->back()->with('error', 'This request exceeds the allowed limit of 5 days per year.');
+        }
+
+        // إنشاء الطلب بناءً على دور المستخدم
+        if ($user->role === 'manager') {
+            if ($request->input('user_id') && $request->input('user_id') !== $user->id) {
+                $this->absenceRequestService->createRequestForUser($validated['user_id'], $validated);
+            } else {
+                $this->absenceRequestService->createRequest($validated);
+            }
+        } else {
             $this->absenceRequestService->createRequest($validated);
         }
-    } else {
 
-        $this->absenceRequestService->createRequest($validated);
+        return redirect()->route('absence-requests.index')
+            ->with('success', 'Absence request submitted successfully.');
     }
-
-    return redirect()->route('absence-requests.index')
-        ->with('success', 'Absence request submitted successfully.');
-}
 
 
     public function update(Request $request, AbsenceRequest $absenceRequest)

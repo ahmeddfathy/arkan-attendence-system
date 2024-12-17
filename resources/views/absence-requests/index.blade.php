@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('content')
@@ -11,6 +12,21 @@
         </ul>
     </div>
     @endif
+
+    @if(session('error'))
+    <div class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+@endif
+
+
+
+@if(isset($absenceDays))
+    <div class="alert alert-info">
+        <strong>عدد أيام غيابك هذا العام:</strong> {{ $absenceDays }}
+    </div>
+    @endif
+
 
 
     <div class="row justify-content-center">
@@ -32,6 +48,9 @@
                             <thead>
                                 <tr>
                                     <th>Name</th>
+                                    <th>
+                                        absence days
+                                    </th>
                                     <th>Date</th>
                                     <th>Reason</th>
                                     <th>Status</th>
@@ -43,6 +62,14 @@
                                 @forelse($requests as $request)
                                 <tr class="request-row">
                                     <td>{{ $request->user->name ?? 'Unknown User' }}</td>
+
+
+                                    <td>
+                                                @if(isset($absenceDays))
+                 {{ $absenceDays }}
+            @endif
+
+                            </td>
                                     <td>{{ $request->absence_date }}</td>
                                     <td>{{ $request->reason }}</td>
                                     <td>

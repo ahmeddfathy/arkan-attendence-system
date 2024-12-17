@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\AbsenceRequest;
 use Illuminate\Support\Facades\Auth;
-
+use Carbon\Carbon;
 class AbsenceRequestService
 {
     protected $notificationService;
@@ -134,5 +134,22 @@ class AbsenceRequestService
         'status' => 'pending'
     ]);
 }
+
+
+
+public function calculateAbsenceDays($userId)
+{
+    $startOfYear = Carbon::now()->startOfYear();
+    $endOfYear = Carbon::now()->endOfYear();
+
+    $absenceDays = AbsenceRequest::where('user_id', $userId)
+        ->where('status', 'approved') 
+        ->whereBetween('absence_date', [$startOfYear, $endOfYear])
+        ->count();
+
+    return $absenceDays;
+}
+
+
 
 }
