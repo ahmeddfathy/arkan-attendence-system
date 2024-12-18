@@ -143,7 +143,7 @@ public function calculateAbsenceDays($userId)
     $endOfYear = Carbon::now()->endOfYear();
 
     $absenceDays = AbsenceRequest::where('user_id', $userId)
-        ->where('status', 'approved') 
+        ->where('status', 'approved')
         ->whereBetween('absence_date', [$startOfYear, $endOfYear])
         ->count();
 

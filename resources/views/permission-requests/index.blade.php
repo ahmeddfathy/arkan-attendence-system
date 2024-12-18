@@ -102,11 +102,11 @@
                                     </td>
                                     <td>
                                         @php
-                                            $statusClass = [
-                                                'pending' => 'bg-warning',
-                                                'approved' => 'bg-success',
-                                                'rejected' => 'bg-danger'
-                                            ][$request->status] ?? 'bg-secondary';
+                                        $statusClass = [
+                                        'pending' => 'bg-warning',
+                                        'approved' => 'bg-success',
+                                        'rejected' => 'bg-danger'
+                                        ][$request->status] ?? 'bg-secondary';
                                         @endphp
                                         <span class="badge {{ $statusClass }}">
                                             {{ ucfirst($request->status) }}
@@ -115,59 +115,59 @@
                                     <td>
                                         <div class="btn-group">
                                             @if($request->status === 'pending')
-                                                @if(Auth::user()->id === $request->user_id)
-                                                    <button class="btn btn-sm btn-outline-primary edit-btn"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#editPermissionModal"
-                                                            data-id="{{ $request->id }}"
-                                                            data-departure="{{ $request->departure_time }}"
-                                                            data-return="{{ $request->return_time }}"
-                                                            data-reason="{{ $request->reason }}">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <form action="{{ route('permission-requests.destroy', $request) }}"
-                                                          method="POST"
-                                                          class="d-inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit"
-                                                                class="btn btn-sm btn-outline-danger"
-                                                                onclick="return confirm('Are you sure you want to delete this request?')">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                                @if(Auth::user()->role === 'manager')
-                                                    <button class="btn btn-sm btn-outline-info respond-btn"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#respondModal"
-                                                            data-request-id="{{ $request->id }}">
-                                                        <i class="fas fa-reply me-1"></i> Respond
-                                                    </button>
-                                                @endif
+                                            @if(Auth::user()->id === $request->user_id)
+                                            <button class="btn btn-sm btn-outline-primary edit-btn"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editPermissionModal"
+                                                data-id="{{ $request->id }}"
+                                                data-departure="{{ $request->departure_time }}"
+                                                data-return="{{ $request->return_time }}"
+                                                data-reason="{{ $request->reason }}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <form action="{{ route('permission-requests.destroy', $request) }}"
+                                                method="POST"
+                                                class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Are you sure you want to delete this request?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                            @endif
+                                            @if(Auth::user()->role === 'manager')
+                                            <button class="btn btn-sm btn-outline-info respond-btn"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#respondModal"
+                                                data-request-id="{{ $request->id }}">
+                                                <i class="fas fa-reply me-1"></i> Respond
+                                            </button>
+                                            @endif
                                             @endif
                                             @if(Auth::user()->role === 'manager' && $request->status !== 'pending')
-                                                <div class="btn-group">
-                                                    <button class="btn btn-sm btn-outline-warning modify-response-btn"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#modifyResponseModal"
-                                                            data-request-id="{{ $request->id }}"
-                                                            data-status="{{ $request->status }}"
-                                                            data-reason="{{ $request->rejection_reason }}">
-                                                        <i class="fas fa-edit me-1"></i> Modify
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-outline-warning modify-response-btn"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modifyResponseModal"
+                                                    data-request-id="{{ $request->id }}"
+                                                    data-status="{{ $request->status }}"
+                                                    data-reason="{{ $request->rejection_reason }}">
+                                                    <i class="fas fa-edit me-1"></i> Modify
+                                                </button>
+                                                <form action="{{ route('permission-requests.reset-status', $request) }}"
+                                                    method="POST"
+                                                    class="d-inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit"
+                                                        class="btn btn-sm btn-outline-secondary"
+                                                        onclick="return confirm('Reset this request to pending status?')">
+                                                        <i class="fas fa-undo"></i>
                                                     </button>
-                                                    <form action="{{ route('permission-requests.reset-status', $request) }}"
-                                                          method="POST"
-                                                          class="d-inline">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit"
-                                                                class="btn btn-sm btn-outline-secondary"
-                                                                onclick="return confirm('Reset this request to pending status?')">
-                                                            <i class="fas fa-undo"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
+                                                </form>
+                                            </div>
                                             @endif
                                         </div>
                                     </td>
@@ -234,31 +234,31 @@
                     <div class="mb-3">
                         <label for="departure_time" class="form-label">Departure Time</label>
                         <input type="datetime-local"
-                               class="form-control"
-                               id="departure_time"
-                               name="departure_time"
-                               required
-                               min="{{ date('Y-m-d\TH:i') }}">
+                            class="form-control"
+                            id="departure_time"
+                            name="departure_time"
+                            required
+                            min="{{ date('Y-m-d\TH:i') }}">
                     </div>
 
                     <div class="mb-3">
                         <label for="return_time" class="form-label">Return Time</label>
                         <input type="datetime-local"
-                               class="form-control"
-                               id="return_time"
-                               name="return_time"
-                               required
-                               min="{{ date('Y-m-d\TH:i') }}">
+                            class="form-control"
+                            id="return_time"
+                            name="return_time"
+                            required
+                            min="{{ date('Y-m-d\TH:i') }}">
                     </div>
 
                     <div class="mb-3">
                         <label for="reason" class="form-label">Reason</label>
                         <textarea class="form-control"
-                                  id="reason"
-                                  name="reason"
-                                  required
-                                  rows="3"
-                                  maxlength="255"></textarea>
+                            id="reason"
+                            name="reason"
+                            required
+                            rows="3"
+                            maxlength="255"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer border-0">
@@ -285,29 +285,29 @@
                     <div class="mb-3">
                         <label for="edit_departure_time" class="form-label">Departure Time</label>
                         <input type="datetime-local"
-                               class="form-control"
-                               id="edit_departure_time"
-                               name="departure_time"
-                               required
-                               min="{{ date('Y-m-d\TH:i') }}">
+                            class="form-control"
+                            id="edit_departure_time"
+                            name="departure_time"
+                            required
+                            min="{{ date('Y-m-d\TH:i') }}">
                     </div>
                     <div class="mb-3">
                         <label for="edit_return_time" class="form-label">Return Time</label>
                         <input type="datetime-local"
-                               class="form-control"
-                               id="edit_return_time"
-                               name="return_time"
-                               required
-                               min="{{ date('Y-m-d\TH:i') }}">
+                            class="form-control"
+                            id="edit_return_time"
+                            name="return_time"
+                            required
+                            min="{{ date('Y-m-d\TH:i') }}">
                     </div>
                     <div class="mb-3">
                         <label for="edit_reason" class="form-label">Reason</label>
                         <textarea class="form-control"
-                                  id="edit_reason"
-                                  name="reason"
-                                  required
-                                  rows="3"
-                                  maxlength="255"></textarea>
+                            id="edit_reason"
+                            name="reason"
+                            required
+                            rows="3"
+                            maxlength="255"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer border-0">
@@ -349,11 +349,11 @@
                         <div class="mb-3">
                             <label for="rejection_reason" class="form-label required">Rejection Reason</label>
                             <textarea class="form-control"
-                                    id="rejection_reason"
-                                    name="rejection_reason"
-                                    rows="3"
-                                    maxlength="255"
-                                    placeholder="Please provide a reason for rejection..."></textarea>
+                                id="rejection_reason"
+                                name="rejection_reason"
+                                rows="3"
+                                maxlength="255"
+                                placeholder="Please provide a reason for rejection..."></textarea>
                             <div class="form-text text-muted">
                                 <i class="fas fa-info-circle me-1"></i>
                                 This reason will be visible to the employee
@@ -400,11 +400,11 @@
                     <div class="mb-3" id="modify_reason_container" style="display: none;">
                         <label for="modify_reason" class="form-label">Rejection Reason</label>
                         <textarea class="form-control"
-                                  id="modify_reason"
-                                  name="rejection_reason"
-                                  rows="3"
-                                  maxlength="255"
-                                  placeholder="Please provide a reason for rejection..."></textarea>
+                            id="modify_reason"
+                            name="rejection_reason"
+                            rows="3"
+                            maxlength="255"
+                            placeholder="Please provide a reason for rejection..."></textarea>
                         <div class="form-text text-muted">
                             This will update the rejection reason shown to the employee
                         </div>
@@ -421,50 +421,106 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tooltips
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    });
-
-    // Handle Edit Button Click
-    document.querySelectorAll('.edit-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            // Get data from button attributes
-            const requestId = this.getAttribute('data-id');
-            const departureTime = this.getAttribute('data-departure');
-            const returnTime = this.getAttribute('data-return');
-            const reason = this.getAttribute('data-reason');
-
-            // Set form action URL
-            const form = document.getElementById('editPermissionForm');
-            form.action = `/permission-requests/${requestId}`;
-
-            // Format datetime for input fields
-            const formatDateTime = (dateTimeStr) => {
-                const date = new Date(dateTimeStr);
-                return date.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:mm
-            };
-
-            // Populate form fields
-            document.getElementById('edit_departure_time').value = formatDateTime(departureTime);
-            document.getElementById('edit_return_time').value = formatDateTime(returnTime);
-            document.getElementById('edit_reason').value = reason;
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        const tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
         });
-    });
 
-    // Handle status radio changes for both respond and modify modals
-    ['status', 'modify_status'].forEach(prefix => {
-        document.querySelectorAll(`input[name="${prefix}"]`).forEach(radio => {
-            radio.addEventListener('change', function() {
-                const containerId = `${prefix === 'status' ? 'rejection' : 'modify'}_reason_container`;
-                const container = document.getElementById(containerId);
-                const textarea = container.querySelector('textarea');
+        // Handle Edit Button Click
+        document.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Get data from button attributes
+                const requestId = this.getAttribute('data-id');
+                const departureTime = this.getAttribute('data-departure');
+                const returnTime = this.getAttribute('data-return');
+                const reason = this.getAttribute('data-reason');
 
-                if (this.value === 'rejected') {
+                // Set form action URL
+                const form = document.getElementById('editPermissionForm');
+                form.action = `/permission-requests/${requestId}`;
+
+                const formatDateTime = (dateTimeStr) => {
+
+                    const date = new Date(dateTimeStr);
+
+
+                    const localDateTime = new Date(date.toLocaleString('en-US', {
+                        timeZone: 'Africa/Cairo'
+                    }));
+
+
+                    const year = localDateTime.getFullYear();
+                    const month = String(localDateTime.getMonth() + 1).padStart(2, '0');
+                    const day = String(localDateTime.getDate()).padStart(2, '0');
+                    const hours = String(localDateTime.getHours()).padStart(2, '0');
+                    const minutes = String(localDateTime.getMinutes()).padStart(2, '0');
+
+                    return `${year}-${month}-${day}T${hours}:${minutes}`;
+                };
+                // Populate form fields
+                document.getElementById('edit_departure_time').value = formatDateTime(departureTime);
+                document.getElementById('edit_return_time').value = formatDateTime(returnTime);
+                document.getElementById('edit_reason').value = reason;
+            });
+        });
+
+        // Handle status radio changes for both respond and modify modals
+        ['status', 'modify_status'].forEach(prefix => {
+            document.querySelectorAll(`input[name="${prefix}"]`).forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const containerId = `${prefix === 'status' ? 'rejection' : 'modify'}_reason_container`;
+                    const container = document.getElementById(containerId);
+                    const textarea = container.querySelector('textarea');
+
+                    if (this.value === 'rejected') {
+                        container.style.display = 'block';
+                        textarea.setAttribute('required', 'required');
+                    } else {
+                        container.style.display = 'none';
+                        textarea.removeAttribute('required');
+                        textarea.value = '';
+                    }
+                });
+            });
+        });
+
+        // Handle respond button clicks
+        document.querySelectorAll('.respond-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const requestId = this.dataset.requestId;
+                const form = document.getElementById('respondForm');
+                form.action = `/permission-requests/${requestId}/update-status`;
+
+                // Reset form
+                form.reset();
+                document.getElementById('rejection_reason_container').style.display = 'none';
+                document.getElementById('rejection_reason').removeAttribute('required');
+            });
+        });
+
+        // Handle modify response button clicks
+        document.querySelectorAll('.modify-response-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const requestId = this.dataset.requestId;
+                const status = this.dataset.status;
+                const reason = this.dataset.reason;
+
+                const form = document.getElementById('modifyResponseForm');
+                form.action = `/permission-requests/${requestId}/modify`;
+
+                // Set the correct radio button
+                document.getElementById(`modify_status_${status}`).checked = true;
+
+                // Show/hide rejection reason based on status
+                const container = document.getElementById('modify_reason_container');
+                const textarea = document.getElementById('modify_reason');
+
+                if (status === 'rejected') {
                     container.style.display = 'block';
                     textarea.setAttribute('required', 'required');
+                    textarea.value = reason || '';
                 } else {
                     container.style.display = 'none';
                     textarea.removeAttribute('required');
@@ -472,80 +528,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
-    });
 
-    // Handle respond button clicks
-    document.querySelectorAll('.respond-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const requestId = this.dataset.requestId;
-            const form = document.getElementById('respondForm');
-            form.action = `/permission-requests/${requestId}/update-status`;
+        // Handle employee selection for manager requests
+        if (document.getElementById('self_registration')) {
+            document.querySelectorAll('input[name="registration_type"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const userSelect = document.getElementById('user_id');
+                    const container = document.getElementById('employee_select_container');
 
-            // Reset form
-            form.reset();
-            document.getElementById('rejection_reason_container').style.display = 'none';
-            document.getElementById('rejection_reason').removeAttribute('required');
-        });
-    });
+                    if (this.value === 'self') {
+                        container.style.display = 'none';
+                        userSelect.value = '';
+                    } else {
+                        container.style.display = 'block';
+                        userSelect.value = '';
+                    }
+                });
+            });
+        }
 
-    // Handle modify response button clicks
-    document.querySelectorAll('.modify-response-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const requestId = this.dataset.requestId;
-            const status = this.dataset.status;
-            const reason = this.dataset.reason;
-
-            const form = document.getElementById('modifyResponseForm');
-            form.action = `/permission-requests/${requestId}/modify`;
-
-            // Set the correct radio button
-            document.getElementById(`modify_status_${status}`).checked = true;
-
-            // Show/hide rejection reason based on status
-            const container = document.getElementById('modify_reason_container');
-            const textarea = document.getElementById('modify_reason');
-
-            if (status === 'rejected') {
-                container.style.display = 'block';
-                textarea.setAttribute('required', 'required');
-                textarea.value = reason || '';
-            } else {
-                container.style.display = 'none';
-                textarea.removeAttribute('required');
-                textarea.value = '';
-            }
-        });
-    });
-
-    // Handle employee selection for manager requests
-    if (document.getElementById('self_registration')) {
-        document.querySelectorAll('input[name="registration_type"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const userSelect = document.getElementById('user_id');
-                const container = document.getElementById('employee_select_container');
-
-                if (this.value === 'self') {
-                    container.style.display = 'none';
-                    userSelect.value = '';
-                } else {
-                    container.style.display = 'block';
-                    userSelect.value = '';
+        // Initialize form validation
+        document.querySelectorAll('.modal form').forEach(form => {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
                 }
+                form.classList.add('was-validated');
             });
         });
-    }
-
-    // Initialize form validation
-    document.querySelectorAll('.modal form').forEach(form => {
-        form.addEventListener('submit', function(event) {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            form.classList.add('was-validated');
-        });
     });
-});
 </script>
 @endpush
 @endsection

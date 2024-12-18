@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('content')
@@ -17,15 +16,16 @@
     <div class="alert alert-danger">
         {{ session('error') }}
     </div>
-@endif
+    @endif
 
 
 
-@if(isset($absenceDays))
+    @if(isset($absenceDays))
     <div class="alert alert-info">
         <strong>عدد أيام غيابك هذا العام:</strong> {{ $absenceDays }}
     </div>
     @endif
+
 
 
 
@@ -49,7 +49,7 @@
                                 <tr>
                                     <th>Name</th>
                                     <th>
-                                        absence days
+                                        Number Of absence days
                                     </th>
                                     <th>Date</th>
                                     <th>Reason</th>
@@ -65,11 +65,21 @@
 
 
                                     <td>
-                                                @if(isset($absenceDays))
-                 {{ $absenceDays }}
-            @endif
+                                            @if(Auth::user()->id === $request->user_id)
+                                        {{ $absenceDays }}
+                                        @else
 
-                            </td>
+                                        @if($request->user)
+                                        {{ $request->user->approved_absence_days ?? 0 }}
+                                        @else
+                                        0
+                                        @endif
+
+                                    @endif
+                                    </td>
+
+
+
                                     <td>{{ $request->absence_date }}</td>
                                     <td>{{ $request->reason }}</td>
                                     <td>
@@ -132,6 +142,7 @@
                                         @endif
                                         @endif
                                     </td>
+
                                 </tr>
                                 @empty
                                 <tr>
@@ -454,8 +465,6 @@
             document.getElementById('modify_reason_container').style.display = 'block';
         }
     });
-
-
 </script>
 
 

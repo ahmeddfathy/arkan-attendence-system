@@ -26,16 +26,20 @@ class AbsenceRequestController extends Controller
             $requests = $this->absenceRequestService->getAllRequests();
             $users = User::select('id', 'name')->get();
 
-            // احسب أيام الغياب لكل مستخدم
-            foreach ($users as $userRecord) {
-                $userRecord->absence_days = $this->absenceRequestService->calculateAbsenceDays($userRecord->id);
+            // Calculate approved absence days for all users in the request
+            $absenceDays = $this->absenceRequestService->calculateAbsenceDays($user->id);
+
+            // Load absence days for each user in the requests
+            foreach ($requests as $request) {
+                if ($request->user) {
+                    $request->user->approved_absence_days =
+                        $this->absenceRequestService->calculateAbsenceDays($request->user->id);
+                }
             }
 
-            return view('absence-requests.index', compact('users', 'requests' ));
+            return view('absence-requests.index', compact('users', 'requests', 'absenceDays'));
         } elseif ($user->role === 'employee') {
             $requests = $this->absenceRequestService->getUserRequests();
-
-
             $absenceDays = $this->absenceRequestService->calculateAbsenceDays($user->id);
 
             return view('absence-requests.index', compact('requests', 'absenceDays'));
@@ -43,6 +47,7 @@ class AbsenceRequestController extends Controller
             return redirect()->route('welcome');
         }
     }
+
 
 
 

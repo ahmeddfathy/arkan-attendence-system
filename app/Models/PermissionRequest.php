@@ -54,4 +54,8 @@ class PermissionRequest extends Model
 
         return $totalAllowed - $usedMinutes;
     }
+
+    
+
 }
+

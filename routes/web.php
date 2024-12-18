@@ -6,13 +6,12 @@ use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AbsenceRequestController;
 use App\Http\Controllers\PermissionRequestController;
-use App\Http\Controllers\ManagerPermissionController;
 use App\Http\Controllers\OverTimeRequestsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AttendanceRecordController;
 use App\Http\Controllers\MacAddressController;
-
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SalarySheetController;
 
 Route::get('/salary-sheets', [SalarySheetController::class, 'index'])->name('salary-sheets.index');
@@ -48,26 +47,19 @@ Route::middleware(['auth'])->group(function () {
 
 // Manager routes
 Route::middleware(['auth', 'role:manager'])->group(function () {
-    // Resource routes
     Route::resource('leaves', LeaveController::class);
     Route::resource('attendances', AttendanceController::class);
     Route::resource('overtime-requests', OverTimeRequestsController::class);
-
-    // Absence request management
     Route::patch('/absence-requests/{absenceRequest}/reset-status', [AbsenceRequestController::class, 'resetStatus'])
         ->name('absence-requests.reset-status');
     Route::patch('/absence-requests/{id}/modify', [AbsenceRequestController::class, 'modifyResponse'])
         ->name('absence-requests.modify');
-
-    // Permission request management
     Route::post('/permission-requests/{permissionRequest}/update-status', [PermissionRequestController::class, 'updateStatus'])
         ->name('permission-requests.update-status');
     Route::patch('/permission-requests/{permissionRequest}/reset-status', [PermissionRequestController::class, 'resetStatus'])
         ->name('permission-requests.reset-status');
     Route::patch('/permission-requests/{permissionRequest}/modify', [PermissionRequestController::class, 'modifyResponse'])
         ->name('permission-requests.modify');
-
-    // Overtime request management
     Route::patch('/overtime-requests/{overTimeRequest}/respond', [OverTimeRequestsController::class, 'updateStatus'])
         ->name('overtime-requests.respond');
     Route::patch('/overtime-requests/{overTimeRequest}/reset-status', [OverTimeRequestsController::class, 'resetStatus'])
@@ -76,14 +68,6 @@ Route::middleware(['auth', 'role:manager'])->group(function () {
         ->name('overtime-requests.modify');
     Route::patch('/overtime-requests/{id}', [OverTimeRequestsController::class, 'update']);
     Route::delete('/overtime-requests/{overtimeRequest}', [OverTimeRequestsController::class, 'destroy'])->name('overtime-requests.destroy');
-
-    // Manager permissions
-    Route::get('/manager/permissions', [ManagerPermissionController::class, 'index'])
-        ->name('manager.permissions.index');
-    Route::put('/manager/permissions/{permission}/response', [ManagerPermissionController::class, 'updateResponse'])
-        ->name('manager.permissions.update-response');
-    Route::delete('/manager/permissions/{permission}/response', [ManagerPermissionController::class, 'deleteResponse'])
-        ->name('manager.permissions.delete-response');
 });
 
 // Shared routes (Manager & Employee)
@@ -91,16 +75,18 @@ Route::middleware(['auth', 'role:manager,employee'])->group(function () {
     // Attendance
     Route::get('attendances/create', [AttendanceController::class, 'create'])->name('attendances.create');
     Route::post('attendances', [AttendanceController::class, 'store'])->name('attendances.store');
-
     // Leave
     Route::get('leaves/create', [LeaveController::class, 'create'])->name('leaves.create');
     Route::post('leaves', [LeaveController::class, 'store'])->name('leaves.store');
-
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
     Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount']);
     Route::get('/notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])
         ->name('notifications.mark-as-read');
+
+Route::patch('/permission-requests/{id}/updateReturnedStatus', [PermissionRequestController::class, 'updateReturnedStatus'])
+    ->name('permission-requests.updateReturnedStatus');
+
 });
 
 // User management routes
@@ -115,37 +101,25 @@ Route::get('/user/{id}/attendance-report', [DashboardController::class, 'generat
     ->name('user.downloadAttendanceReport');
 
 
-    use Illuminate\Support\Facades\Auth;
 
-    Route::get('/salary-sheet/{userId}/{month}/{filename}', function ($userId, $month, $filename) {
-        $user = Auth::user();
+Route::get('/salary-sheet/{userId}/{month}/{filename}', function ($userId, $month, $filename) {
+    $user = Auth::user();
+    if ($user->id != $userId && $user->role != 'manager') {
+        abort(403, 'Unauthorized access');
+    }
+    $filePath = storage_path("app/private/salary_sheets/{$userId}/{$month}/{$filename}");
+    if (!file_exists($filePath)) {
+        abort(404, 'File not found');
+    }
+    return response()->file($filePath);
+})->middleware('auth');
 
-        // تحقق من أن المستخدم له الصلاحية
-        if ($user->id != $userId && $user->role != 'manager') {
-            abort(403, 'Unauthorized access');
-        }
-
-        // المسار الفعلي للملف في مجلد storage/app/private
-        $filePath = storage_path("app/private/salary_sheets/{$userId}/{$month}/{$filename}");
-
-        // تحقق من وجود الملف
-        if (!file_exists($filePath)) {
-            abort(404, 'File not found');
-        }
-
-        // عرض الملف
-        return response()->file($filePath);
-    })->middleware('auth');
-
-    use App\Http\Controllers\ChatController;
-    use App\Http\Controllers\OnlineStatusController;
-
-
-        Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
-        Route::get('/chat/messages/{receiver}', [ChatController::class, 'getMessages']);
-        Route::post('/chat/send', [ChatController::class, 'sendMessage']);
-        Route::post('/chat/mark-seen', [ChatController::class, 'markAsSeen']);
-
-        Route::post('/status/update', [OnlineStatusController::class, 'updateStatus']);
-        Route::get('/status/user/{userId}', [OnlineStatusController::class, 'getUserStatus']);
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\OnlineStatusController;
+Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+Route::get('/chat/messages/{receiver}', [ChatController::class, 'getMessages']);
+Route::post('/chat/send', [ChatController::class, 'sendMessage']);
+Route::post('/chat/mark-seen', [ChatController::class, 'markAsSeen']);
+Route::post('/status/update', [OnlineStatusController::class, 'updateStatus']);
+Route::get('/status/user/{userId}', [OnlineStatusController::class, 'getUserStatus']);
 

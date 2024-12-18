@@ -34,7 +34,7 @@ class PermissionRequestController extends Controller
         } elseif ($user->role === 'employee') {
             $requests = $this->permissionRequestService->getAllRequests();
 
-            
+
             $remainingMinutes = $this->permissionRequestService->getRemainingMinutes($user->id);
 
             return view('permission-requests.index', compact('requests', 'remainingMinutes'));
@@ -167,5 +167,8 @@ class PermissionRequestController extends Controller
     return redirect()->route('permission-requests.index')
         ->with('success', 'Request status updated successfully.');
 }
+
+
+
 
 }

@@ -1,3 +1,55 @@
+
+
+chat-container {
+    display: flex;
+    height: calc(100vh - 64px);
+    background-color: #f4f0eb; 
+}
+
+.messages-container {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+    background-color: #f5e6d3;
+    scrollbar-width: thin;
+    scrollbar-color: #c1a78d #f5e6d3;
+}
+
+
+.messages-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+    background: #f5e6d3;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+    background-color: #c1a78d;
+    border-radius: 4px;
+}
+
+.message-own .message-content {
+    background-color: #e6f2d9; /* لون فاتح للرسائل الخاصة */
+}
+
+.message-other .message-content {
+    background-color: #f4f0eb; /* لون فاتح للرسائل الأخرى */
+}
+
+.chat-input-area {
+    background: #f4f0eb; /* لون الخلفية */
+    position: sticky;
+    bottom: 0;
+    z-index: 10; /* للتأكد من بقاء حقل الإدخال في الأعلى */
+}
+
+.input-wrapper {
+    background: #ffffff;
+    border: 1px solid #c1a78d; /* إضافة حدود خفيفة */
+}
+
 .chat-container {
     display: flex;
     height: calc(100vh - 64px);
