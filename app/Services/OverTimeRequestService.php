@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\OverTimeRequests;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Collection;
+
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
@@ -67,7 +67,7 @@ class OverTimeRequestService
 
     public function deleteRequest(OverTimeRequests $request)
     {
-        
+
         return DB::transaction(function () use ($request) {
             return $request->delete();
         });

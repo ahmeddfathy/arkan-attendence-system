@@ -18,7 +18,7 @@ class PermissionRequest extends Model
         'status',
         'rejection_reason',
         'reason',
-        
+
     ];
 
     protected $casts = [
