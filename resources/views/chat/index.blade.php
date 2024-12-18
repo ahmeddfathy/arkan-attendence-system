@@ -90,7 +90,6 @@
 @push('scripts')
 <script>
 let currentChatId = null;
-let lastMessageTime = null;
 
 function loadChat(userId, userName) {
     currentChatId = userId;
@@ -109,7 +108,6 @@ function fetchMessages() {
     $.get(`/chat/messages/${currentChatId}`, function(messages) {
         renderMessages(messages);
         scrollToBottom();
-        updateLastMessageTime(messages);
     });
 }
 
@@ -158,10 +156,7 @@ function renderMessages(messages) {
 }
 
 function startMessagePolling() {
-    // Clear any existing polling
     stopMessagePolling();
-
-    // Start new polling
     window.messagePolling = setInterval(fetchMessages, 3000);
 }
 
@@ -201,27 +196,17 @@ $('#message-form').on('submit', function(e) {
         receiver_id: currentChatId,
         content: content,
         _token: '{{ csrf_token() }}'
-    }, function(response) {
+    }, function() {
         input.val('');
         fetchMessages();
     });
 });
 
-// Update own online status
-function updateOnlineStatus() {
-    $.post('/status/update', {
-        is_online: true,
-        _token: '{{ csrf_token() }}'
-    });
-}
-
-setInterval(updateOnlineStatus, 60000);
-
-$(window).on('beforeunload', function() {
-    $.post('/status/update', {
-        is_online: false,
-        _token: '{{ csrf_token() }}'
-    });
+// Automatically load chat with the manager
+document.addEventListener('DOMContentLoaded', function () {
+    @if($manager)
+        loadChat({{ $manager->id }}, '{{ $manager->name }}');
+    @endif
 });
 </script>
 @endpush

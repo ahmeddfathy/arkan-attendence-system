@@ -18,12 +18,15 @@ class ChatController extends Controller
     }
 
     public function index()
-    {
-        $user = Auth::user();
-        $chats = $this->chatService->getUserChats($user);
+{
+    $user = Auth::user();
+    $chats = $this->chatService->getUserChats($user);
 
-        return view('chat.index', compact('chats'));
-    }
+    // احصل على المستخدم المدير
+    $manager = User::where('role', 'manager')->first();
+
+    return view('chat.index', compact('chats', 'manager'));
+}
 
     public function getMessages(User $receiver)
     {
