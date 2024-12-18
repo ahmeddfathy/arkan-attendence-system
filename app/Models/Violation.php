@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Violation extends Model
 {
     protected $fillable = [
         'user_id',
-        'permission_id',
+        'permission_requests_id',
         'reason',
         'manager_mistake'
     ];
@@ -18,8 +18,8 @@ class Violation extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function permissionRequest()
+    public function permissionRequest(): BelongsTo
     {
-        return $this->belongsTo(PermissionRequest::class);
+        return $this->belongsTo(PermissionRequest::class, 'permission_requests_id');
     }
 }

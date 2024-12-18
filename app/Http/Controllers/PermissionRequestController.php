@@ -168,6 +168,23 @@ class PermissionRequestController extends Controller
         ->with('success', 'Request status updated successfully.');
 }
 
+public function updateReturnStatus(Request $request, PermissionRequest $permissionRequest)
+{
+    $user = Auth::user();
+
+    if ($user->role !== 'manager') {
+        return redirect()->route('welcome')->with('error', 'Unauthorized action.');
+    }
+
+    $validated = $request->validate([
+        'return_status' => 'required|in:0,1,2',
+    ]);
+
+    $this->permissionRequestService->updateReturnStatus($permissionRequest, (int)$validated['return_status']);
+
+    return redirect()->route('permission-requests.index')
+        ->with('success', 'Return status updated successfully.');
+}
 
 
 

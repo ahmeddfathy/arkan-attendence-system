@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\PermissionRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-
+use App\Models\Violation;
 class PermissionRequestService
 {
     const MONTHLY_LIMIT_MINUTES = 180;
@@ -188,6 +188,25 @@ class PermissionRequestService
         return $this->getRemainingMinutes($userId) >= $requestedMinutes;
     }
 
+    public function updateReturnStatus(PermissionRequest $request, int $returnStatus)
+    {
+        $request->update([
+            'returned_on_time' => $returnStatus
+        ]);
 
+        // If did not return on time (status = 2), create a violation
+    
+
+        if ($returnStatus === 2) {
+            Violation::create([
+                'user_id' => $request->user_id,
+                'permission_requests_id' =>$request->id, // Fixed the column name
+                'reason' => 'Did not return on time from approved leave',
+                'manager_mistake' => false
+            ]);
+        }
+
+        return ['success' => true];
+    }
 
 }

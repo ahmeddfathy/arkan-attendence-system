@@ -60,6 +60,10 @@ Route::middleware(['auth', 'role:manager'])->group(function () {
         ->name('permission-requests.reset-status');
     Route::patch('/permission-requests/{permissionRequest}/modify', [PermissionRequestController::class, 'modifyResponse'])
         ->name('permission-requests.modify');
+    Route::patch('/permission-requests/{permissionRequest}/return-status', [PermissionRequestController::class, 'updateReturnStatus'])
+    ->name('permission-requests.update-return-status');
+
+    
     Route::patch('/overtime-requests/{overTimeRequest}/respond', [OverTimeRequestsController::class, 'updateStatus'])
         ->name('overtime-requests.respond');
     Route::patch('/overtime-requests/{overTimeRequest}/reset-status', [OverTimeRequestsController::class, 'resetStatus'])
@@ -84,8 +88,7 @@ Route::middleware(['auth', 'role:manager,employee'])->group(function () {
     Route::get('/notifications/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])
         ->name('notifications.mark-as-read');
 
-Route::patch('/permission-requests/{id}/updateReturnedStatus', [PermissionRequestController::class, 'updateReturnedStatus'])
-    ->name('permission-requests.updateReturnedStatus');
+
 
 });
 

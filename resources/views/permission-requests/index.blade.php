@@ -56,6 +56,7 @@
                                     <th class="border-0">Reason</th>
                                     <th class="border-0">Rejected Reason</th>
                                     <th class="border-0">Status</th>
+                                    <th class="border-0">Return Status</th>
                                     <th class="border-0">Actions</th>
                                 </tr>
                             </thead>
@@ -171,6 +172,49 @@
                                             @endif
                                         </div>
                                     </td>
+                                    @if($request->status === 'approved')
+    <td>
+        <div class="btn-group" role="group">
+            <input type="radio"
+                class="btn-check return-status"
+                name="return_status_{{ $request->id }}"
+                id="return_ontime_{{ $request->id }}"
+                value="1"
+                {{ $request->returned_on_time === 1 ? 'checked' : '' }}
+                data-request-id="{{ $request->id }}">
+            <label class="btn btn-outline-success btn-sm" for="return_ontime_{{ $request->id }}">
+                <i class="fas fa-check me-1"></i>On Time
+            </label>
+
+            <input type="radio"
+                class="btn-check return-status"
+                name="return_status_{{ $request->id }}"
+                id="return_late_{{ $request->id }}"
+                value="2"
+                {{ $request->returned_on_time === 2 ? 'checked' : '' }}
+                data-request-id="{{ $request->id }}">
+            <label class="btn btn-outline-danger btn-sm" for="return_late_{{ $request->id }}">
+                <i class="fas fa-times me-1"></i>Late
+            </label>
+
+            <input type="radio"
+                class="btn-check return-status"
+                name="return_status_{{ $request->id }}"
+                id="return_reset_{{ $request->id }}"
+                value="0"
+                {{ $request->returned_on_time === 0 ? 'checked' : '' }}
+                data-request-id="{{ $request->id }}">
+            <label class="btn btn-outline-secondary btn-sm" for="return_reset_{{ $request->id }}">
+                <i class="fas fa-undo me-1"></i>Reset
+            </label>
+        </div>
+    </td>
+@else
+    <td>
+        <span class="badge bg-secondary">N/A</span>
+    </td>
+@endif
+
                                 </tr>
                                 @empty
                                 <tr>
@@ -557,7 +601,43 @@
                 form.classList.add('was-validated');
             });
         });
+
+        document.querySelectorAll('.return-status').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const requestId = this.dataset.requestId;
+            const status = this.value;
+
+            // Create and submit form
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/permission-requests/${requestId}/return-status`;
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'PATCH';
+
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = csrfToken;
+
+            const statusInput = document.createElement('input');
+            statusInput.type = 'hidden';
+            statusInput.name = 'return_status';
+            statusInput.value = status;
+
+            form.appendChild(methodInput);
+            form.appendChild(csrfInput);
+            form.appendChild(statusInput);
+            document.body.appendChild(form);
+            form.submit();
+        });
     });
+    });
+
+
 </script>
 @endpush
 @endsection
