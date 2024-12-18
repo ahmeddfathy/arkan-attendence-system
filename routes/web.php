@@ -136,3 +136,16 @@ Route::get('/user/{id}/attendance-report', [DashboardController::class, 'generat
         // عرض الملف
         return response()->file($filePath);
     })->middleware('auth');
+
+    use App\Http\Controllers\ChatController;
+    use App\Http\Controllers\OnlineStatusController;
+
+
+        Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+        Route::get('/chat/messages/{receiver}', [ChatController::class, 'getMessages']);
+        Route::post('/chat/send', [ChatController::class, 'sendMessage']);
+        Route::post('/chat/mark-seen', [ChatController::class, 'markAsSeen']);
+
+        Route::post('/status/update', [OnlineStatusController::class, 'updateStatus']);
+        Route::get('/status/user/{userId}', [OnlineStatusController::class, 'getUserStatus']);
+

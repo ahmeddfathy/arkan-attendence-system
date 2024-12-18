@@ -46,6 +46,8 @@ class User extends Authenticatable
         'marital_status',
         'number_of_children',
         'employee_status',
+        'is_online',
+        'last_seen_at'
     ];
 
     /**
@@ -79,12 +81,25 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_online' => 'boolean',
+        'last_seen_at' => 'datetime'
         ];
     }
 
     public function attendanceRecords()
 {
     return $this->hasMany(AttendanceRecord::class);
+}
+
+
+public function sentMessages()
+{
+    return $this->hasMany(Message::class, 'sender_id');
+}
+
+public function receivedMessages()
+{
+    return $this->hasMany(Message::class, 'receiver_id');
 }
 
 }
