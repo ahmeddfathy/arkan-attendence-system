@@ -65,6 +65,7 @@
                                     <td>{{ $request->rejection_reason }}</td>
                                     <td>
                                         {{-- Action Buttons --}}
+
                                         @if($request->status === 'pending')
                                         @if(Auth::user()->id === $request->user_id)
                                         <button class="btn btn-sm btn-primary edit-btn"
@@ -74,21 +75,19 @@
                                             <i class="fas fa-edit"></i>
                                         </button>
 
-                                        </i>
-                                        </button>
-
-                                        <form action="{{ route('absence-requests.destroy', $request -> id) }}"
+                                        <form action="{{ route('overtime-requests.destroy', $request->id) }}"
                                             method="POST"
                                             class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
                                                 class="btn btn-sm btn-danger"
-                                                onclick="return confirm('Are you sure?')">
+                                                onclick="return confirm('Are you sure you want to delete this overtime request?')">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
                                         @endif
+
                                         @endif
 
                                         @if(Auth::user()->role === 'manager')
@@ -156,32 +155,33 @@
                     <div class="modal-body">
                         @if(Auth::user()->role === 'manager')
                         <div class="mb-4">
-                            <label class="form-label fw-bold">Choose Registration Type:</label>
-                            <div class="form-check">
-                                <input type="radio" id="self_registration" name="registration_type" value="self"
-                                    checked class="form-check-input" onclick="toggleEmployeeSelect(true)">
-                                <label class="form-check-label" for="self_registration">Register for Yourself</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="radio" id="other_registration" name="registration_type" value="other"
-                                    class="form-check-input" onclick="toggleEmployeeSelect(false)">
-                                <label class="form-check-label" for="other_registration">Register for Another Employee</label>
+                            <label class="form-label">Request Type</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="registration_type" id="self_registration" value="self" checked>
+                                <label class="btn btn-outline-primary" for="self_registration">
+                                    <i class="fas fa-user me-2"></i>For Myself
+                                </label>
+
+                                <input type="radio" class="btn-check" name="registration_type" id="other_registration" value="other">
+                                <label class="btn btn-outline-primary" for="other_registration">
+                                    <i class="fas fa-users me-2"></i>For Employee
+                                </label>
                             </div>
                         </div>
 
-                        <div class="mb-4" id="employee_select_container">
-                            <label for="user_id" class="form-label fw-bold">Select Employee:</label>
-                            <select name="user_id" id="user_id" class="form-select" required>
-                                <option value="" disabled selected>Select an employee</option>
+                        <div class="mb-4 d-none" id="employee_select_container">
+                            <label for="user_id" class="form-label required">Select Employee</label>
+                            <select name="user_id" id="user_id" class="form-select">
+                                <option value="" disabled selected>Choose an employee...</option>
                                 @foreach($users as $user)
-                                <option value="{{ $user->id }}"
-                                    {{ auth()->user()->id == $user->id ? 'selected' : '' }}>
-                                    {{ $user->name }}
-                                </option>
+                                <option value="{{ $user->id }}">{{ $user->name }}</option>
                                 @endforeach
                             </select>
                         </div>
+
+                        <input type="hidden" name="user_id" id="hidden_user_id" value="{{ Auth::id() }}">
                         @endif
+
 
                         <div class="mb-3">
                             <label for="overtime_date" class="form-label">Overtime Date</label>
@@ -329,19 +329,6 @@
             stagger: 0.1
         });
 
-        // Toggle employee select for managers
-        function toggleEmployeeSelect(isSelf) {
-            const userSelect = document.getElementById('user_id');
-            if (userSelect) {
-                if (isSelf) {
-                    userSelect.value = "{{ auth()->user()->id }}";
-                    userSelect.disabled = true;
-                } else {
-                    userSelect.value = "";
-                    userSelect.disabled = false;
-                }
-            }
-        }
 
         // Toggle rejection reason visibility
         function toggleRejectionReason(statusElement, reasonContainer) {
@@ -416,7 +403,7 @@
 
         // Initialize status change handlers
         function initializeStatusHandlers() {
-            // Response modal status change
+
             const responseStatusInputs = document.querySelectorAll('input[name="status"]');
             responseStatusInputs.forEach(input => {
                 input.addEventListener('change', function() {
@@ -462,6 +449,53 @@
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+    // Previous script content remains...
+
+    // Handle registration type change
+    const registrationTypeHandler = () => {
+        const selfRegistration = document.getElementById('self_registration');
+        const otherRegistration = document.getElementById('other_registration');
+        const employeeContainer = document.getElementById('employee_select_container');
+        const userSelect = document.getElementById('user_id');
+        const hiddenUserId = document.getElementById('hidden_user_id');
+
+        if (!selfRegistration || !otherRegistration || !employeeContainer || !userSelect || !hiddenUserId) {
+            return;
+        }
+
+        const updateUserSelection = () => {
+            if (selfRegistration.checked) {
+                employeeContainer.classList.add('d-none');
+                userSelect.removeAttribute('required');
+                userSelect.value = '';
+                hiddenUserId.value = '{{ Auth::id() }}';
+            } else {
+                employeeContainer.classList.remove('d-none');
+                userSelect.setAttribute('required', 'required');
+                hiddenUserId.value = userSelect.value;
+            }
+        };
+
+        // Initial setup
+        updateUserSelection();
+
+        // Add event listeners
+        selfRegistration.addEventListener('change', updateUserSelection);
+        otherRegistration.addEventListener('change', updateUserSelection);
+
+        // Handle employee selection change
+        userSelect.addEventListener('change', function() {
+            if (otherRegistration.checked) {
+                hiddenUserId.value = this.value;
+            }
+        });
+    };
+
+    // Initialize the registration type handler
+    registrationTypeHandler();
+});
 </script>
 @endpush
 @endsection

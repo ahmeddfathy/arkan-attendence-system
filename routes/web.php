@@ -13,6 +13,20 @@ use App\Http\Controllers\AttendanceRecordController;
 use App\Http\Controllers\MacAddressController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SalarySheetController;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ExampleMail;
+
+Route::get('/send-mail', function () {
+    $data = [
+        'name' => 'Recipient Name',
+        'message' => 'This is a test email.'
+    ];
+
+    Mail::to('ahmeddfathy087@gmail.com')->send(new ExampleMail($data));
+
+    return 'Email Sent Successfully!';
+});
+
 
 Route::get('/salary-sheets', [SalarySheetController::class, 'index'])->name('salary-sheets.index');
 Route::post('/salary-sheets/upload', [SalarySheetController::class, 'upload'])->name('salary-sheets.upload');
@@ -63,7 +77,7 @@ Route::middleware(['auth', 'role:manager'])->group(function () {
     Route::patch('/permission-requests/{permissionRequest}/return-status', [PermissionRequestController::class, 'updateReturnStatus'])
     ->name('permission-requests.update-return-status');
 
-    
+
     Route::patch('/overtime-requests/{overTimeRequest}/respond', [OverTimeRequestsController::class, 'updateStatus'])
         ->name('overtime-requests.respond');
     Route::patch('/overtime-requests/{overTimeRequest}/reset-status', [OverTimeRequestsController::class, 'resetStatus'])

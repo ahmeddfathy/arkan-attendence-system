@@ -113,6 +113,49 @@
                                             {{ ucfirst($request->status) }}
                                         </span>
                                     </td>
+                                    @if($request->status === 'approved')
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <input type="radio"
+                                                class="btn-check return-status"
+                                                name="return_status_{{ $request->id }}"
+                                                id="return_ontime_{{ $request->id }}"
+                                                value="1"
+                                                {{ $request->returned_on_time === 1 ? 'checked' : '' }}
+                                                data-request-id="{{ $request->id }}">
+                                            <label class="btn btn-outline-success btn-sm" for="return_ontime_{{ $request->id }}">
+                                                <i class="fas fa-check me-1"></i>On Time
+                                            </label>
+
+                                            <input type="radio"
+                                                class="btn-check return-status"
+                                                name="return_status_{{ $request->id }}"
+                                                id="return_late_{{ $request->id }}"
+                                                value="2"
+                                                {{ $request->returned_on_time === 2 ? 'checked' : '' }}
+                                                data-request-id="{{ $request->id }}">
+                                            <label class="btn btn-outline-danger btn-sm" for="return_late_{{ $request->id }}">
+                                                <i class="fas fa-times me-1"></i>Late
+                                            </label>
+
+                                            <input type="radio"
+                                                class="btn-check return-status"
+                                                name="return_status_{{ $request->id }}"
+                                                id="return_reset_{{ $request->id }}"
+                                                value="0"
+                                                {{ $request->returned_on_time === 0 ? 'checked' : '' }}
+                                                data-request-id="{{ $request->id }}">
+                                            <label class="btn btn-outline-secondary btn-sm" for="return_reset_{{ $request->id }}">
+                                                <i class="fas fa-undo me-1"></i>Reset
+                                            </label>
+                                        </div>
+                                    </td>
+                                    @else
+                                    <td>
+                                        <span class="badge bg-secondary">N/A</span>
+                                    </td>
+                                    @endif
+
                                     <td>
                                         <div class="btn-group">
                                             @if($request->status === 'pending')
@@ -172,48 +215,7 @@
                                             @endif
                                         </div>
                                     </td>
-                                    @if($request->status === 'approved')
-    <td>
-        <div class="btn-group" role="group">
-            <input type="radio"
-                class="btn-check return-status"
-                name="return_status_{{ $request->id }}"
-                id="return_ontime_{{ $request->id }}"
-                value="1"
-                {{ $request->returned_on_time === 1 ? 'checked' : '' }}
-                data-request-id="{{ $request->id }}">
-            <label class="btn btn-outline-success btn-sm" for="return_ontime_{{ $request->id }}">
-                <i class="fas fa-check me-1"></i>On Time
-            </label>
 
-            <input type="radio"
-                class="btn-check return-status"
-                name="return_status_{{ $request->id }}"
-                id="return_late_{{ $request->id }}"
-                value="2"
-                {{ $request->returned_on_time === 2 ? 'checked' : '' }}
-                data-request-id="{{ $request->id }}">
-            <label class="btn btn-outline-danger btn-sm" for="return_late_{{ $request->id }}">
-                <i class="fas fa-times me-1"></i>Late
-            </label>
-
-            <input type="radio"
-                class="btn-check return-status"
-                name="return_status_{{ $request->id }}"
-                id="return_reset_{{ $request->id }}"
-                value="0"
-                {{ $request->returned_on_time === 0 ? 'checked' : '' }}
-                data-request-id="{{ $request->id }}">
-            <label class="btn btn-outline-secondary btn-sm" for="return_reset_{{ $request->id }}">
-                <i class="fas fa-undo me-1"></i>Reset
-            </label>
-        </div>
-    </td>
-@else
-    <td>
-        <span class="badge bg-secondary">N/A</span>
-    </td>
-@endif
 
                                 </tr>
                                 @empty
@@ -414,7 +416,6 @@
     </div>
 </div>
 
-<!-- Modify Response Modal -->
 <div class="modal fade" id="modifyResponseModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -441,8 +442,8 @@
                         </div>
                     </div>
 
-                    <div class="mb-3" id="modify_reason_container" style="display: none;">
-                        <label for="modify_reason" class="form-label">Rejection Reason</label>
+                    <div class="mb-3 d-none" id="modify_reason_container">
+                        <label for="modify_reason" class="form-label required">Rejection Reason</label>
                         <textarea class="form-control"
                             id="modify_reason"
                             name="rejection_reason"
@@ -450,7 +451,8 @@
                             maxlength="255"
                             placeholder="Please provide a reason for rejection..."></textarea>
                         <div class="form-text text-muted">
-                            This will update the rejection reason shown to the employee
+                            <i class="fas fa-info-circle me-1"></i>
+                            This reason is required and will be shown to the employee
                         </div>
                     </div>
                 </div>
@@ -462,6 +464,7 @@
         </div>
     </div>
 </div>
+
 
 @push('scripts')
 <script>
@@ -545,7 +548,8 @@
         });
 
         // Handle modify response button clicks
-        document.querySelectorAll('.modify-response-btn').forEach(button => {
+  // Handle modify response button clicks
+  document.querySelectorAll('.modify-response-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const requestId = this.dataset.requestId;
                 const status = this.dataset.status;
@@ -562,17 +566,33 @@
                 const textarea = document.getElementById('modify_reason');
 
                 if (status === 'rejected') {
-                    container.style.display = 'block';
+                    container.classList.remove('d-none');
                     textarea.setAttribute('required', 'required');
                     textarea.value = reason || '';
                 } else {
-                    container.style.display = 'none';
+                    container.classList.add('d-none');
                     textarea.removeAttribute('required');
                     textarea.value = '';
                 }
             });
         });
 
+        // Handle status change in modify response modal
+        document.querySelectorAll('input[name="status"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const container = document.getElementById('modify_reason_container');
+                const textarea = document.getElementById('modify_reason');
+
+                if (this.value === 'rejected') {
+                    container.classList.remove('d-none');
+                    textarea.setAttribute('required', 'required');
+                } else {
+                    container.classList.add('d-none');
+                    textarea.removeAttribute('required');
+                    textarea.value = '';
+                }
+            });
+        });
         // Handle employee selection for manager requests
         if (document.getElementById('self_registration')) {
             document.querySelectorAll('input[name="registration_type"]').forEach(radio => {
@@ -603,41 +623,39 @@
         });
 
         document.querySelectorAll('.return-status').forEach(radio => {
-        radio.addEventListener('change', function() {
-            const requestId = this.dataset.requestId;
-            const status = this.value;
+            radio.addEventListener('change', function() {
+                const requestId = this.dataset.requestId;
+                const status = this.value;
 
-            // Create and submit form
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/permission-requests/${requestId}/return-status`;
+                // Create and submit form
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/permission-requests/${requestId}/return-status`;
 
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-            const methodInput = document.createElement('input');
-            methodInput.type = 'hidden';
-            methodInput.name = '_method';
-            methodInput.value = 'PATCH';
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'PATCH';
 
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = '_token';
-            csrfInput.value = csrfToken;
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfToken;
 
-            const statusInput = document.createElement('input');
-            statusInput.type = 'hidden';
-            statusInput.name = 'return_status';
-            statusInput.value = status;
+                const statusInput = document.createElement('input');
+                statusInput.type = 'hidden';
+                statusInput.name = 'return_status';
+                statusInput.value = status;
 
-            form.appendChild(methodInput);
-            form.appendChild(csrfInput);
-            form.appendChild(statusInput);
-            document.body.appendChild(form);
-            form.submit();
+                form.appendChild(methodInput);
+                form.appendChild(csrfInput);
+                form.appendChild(statusInput);
+                document.body.appendChild(form);
+                form.submit();
+            });
         });
     });
-    });
-
-
 </script>
 @endpush
 @endsection
