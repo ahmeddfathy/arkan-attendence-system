@@ -7,7 +7,7 @@ use App\Services\OverTimeRequestService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use Carbon\Carbon;
+
 
 class OverTimeRequestsController extends Controller
 {
@@ -16,28 +16,32 @@ class OverTimeRequestsController extends Controller
     public function __construct(OverTimeRequestService $overTimeRequestService)
     {
         $this->overTimeRequestService = $overTimeRequestService;
-
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        $data = [
-            'requests' => $this->overTimeRequestService->getUserRequests(),
-        ];
+        $employeeName = $request->query('employee_name');
+        $status = $request->query('status');
 
         if ($user->role === 'manager') {
-            $data['users'] = User::select('id', 'name')->get()->map(function ($user) {
+            $requests = $this->overTimeRequestService->getFilteredRequests($employeeName, $status);
+            $users = User::select('id', 'name')->get()->map(function ($user) {
                 $user->overtime_hours = $this->overTimeRequestService->calculateOvertimeHours($user->id);
                 return $user;
             });
-        } elseif ($user->role === 'employee') {
-            $data['overtimeHours'] = $this->overTimeRequestService->calculateOvertimeHours($user->id);
+        } else {
+            $requests = $this->overTimeRequestService->getUserRequests();
         }
 
-        return view('overtime-requests.index', $data);
+        return view('overtime-requests.index', [
+            'requests' => $requests,
+            'users' => $users ?? [],
+            'statuses' => ['pending', 'approved', 'rejected'],
+            'selectedStatus' => $status,
+            'employeeName' => $employeeName,
+        ]);
     }
-
     public function store(Request $request)
     {
         $request->validate([
@@ -64,21 +68,25 @@ class OverTimeRequestsController extends Controller
     }
 
     public function update(Request $request, $id)
-{
-    $validated = $request->validate([
-        'overtime_date' => 'required|date',
-        'start_time' => 'required',
-        'end_time' => 'required|after:start_time',
-        'reason' => 'required|string|max:255',
-    ]);
+    {
+        $validated = $request->validate([
+            'overtime_date' => 'required|date',
+            'start_time' => 'required',
+            'end_time' => 'required|after:start_time',
+            'reason' => 'required|string|max:255',
+        ]);
 
+        try {
+            $overtimeRequest = OverTimeRequests::findOrFail($id);
 
-        $overtimeRequest = OverTimeRequests::findOrFail($id);
-        $overtimeRequest->update($validated);
+            // Call the service method to validate and update the overtime request
+            $this->overTimeRequestService->update($overtimeRequest, $validated);
 
-        return redirect()->route('overtime-requests.index')->with('success', 'Overtime request updated successfully');
-
-}
+            return redirect()->route('overtime-requests.index')->with('success', 'Overtime request updated successfully.');
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
 
 
 public function destroy($id)

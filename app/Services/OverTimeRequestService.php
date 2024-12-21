@@ -5,9 +5,9 @@ namespace App\Services;
 use App\Models\OverTimeRequests;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Builder;
 
 class OverTimeRequestService
 {
@@ -44,7 +44,13 @@ class OverTimeRequestService
         return DB::transaction(function () use ($data) {
             $userId = $data['user_id'] ?? Auth::id();
 
-            $this->validateOverTimeRequest($userId, $data['overtime_date']);
+            // Validate both date and time overlaps
+            $this->validateOverTimeRequest(
+                $userId,
+                $data['overtime_date'],
+                $data['start_time'],
+                $data['end_time']
+            );
 
             $request = OverTimeRequests::create([
                 'user_id' => $userId,
@@ -61,19 +67,31 @@ class OverTimeRequestService
         });
     }
 
+    public function update(OverTimeRequests $request, array $data): bool
+{
+    // Validate overlaps for update, excluding the current request
+    $this->validateOverTimeRequest(
+        $request->user_id,
+        $data['overtime_date'],
+        $data['start_time'],
+        $data['end_time'],
+        $request->id 
+    );
 
-
-
+    return $request->update([
+        'overtime_date' => $data['overtime_date'],
+        'start_time' => $data['start_time'],
+        'end_time' => $data['end_time'],
+        'reason' => $data['reason']
+    ]);
+}
 
     public function deleteRequest(OverTimeRequests $request)
     {
-
         return DB::transaction(function () use ($request) {
             return $request->delete();
         });
     }
-
-
 
     public function updateStatus(OverTimeRequests $request, array $data): bool
     {
@@ -124,17 +142,69 @@ class OverTimeRequestService
         });
     }
 
-    protected function validateOverTimeRequest(int $userId, string $overtimeDate, ?int $excludeId = null): void
-    {
+    protected function validateOverTimeRequest(
+        int $userId,
+        string $overtimeDate,
+        string $startTime,
+        string $endTime,
+        ?int $excludeId = null
+    ): void {
+        $requestDate = Carbon::parse($overtimeDate);
+
+
+        // Query for overlapping requests in the same month
         $query = OverTimeRequests::where('user_id', $userId)
-            ->where('overtime_date', $overtimeDate);
+            ->whereYear('overtime_date', $requestDate->year)
+            ->whereMonth('overtime_date', $requestDate->month);
 
         if ($excludeId) {
             $query->where('id', '!=', $excludeId);
         }
 
-        if ($query->exists()) {
-            throw new \Exception('An overtime request already exists for this date.');
+        // Check for time overlaps
+        $overlappingRequest = $query->where(function ($q) use ($overtimeDate, $startTime, $endTime) {
+            $q->where('overtime_date', $overtimeDate)
+              ->where(function ($timeQuery) use ($startTime, $endTime) {
+                  // Case 1: New request starts during an existing request
+                  $timeQuery->where(function ($q) use ($startTime, $endTime) {
+                      $q->where('start_time', '<=', $startTime)
+                        ->where('end_time', '>', $startTime);
+                  })
+                  // Case 2: New request ends during an existing request
+                  ->orWhere(function ($q) use ($startTime, $endTime) {
+                      $q->where('start_time', '<', $endTime)
+                        ->where('end_time', '>=', $endTime);
+                  })
+                  // Case 3: New request completely contains an existing request
+                  ->orWhere(function ($q) use ($startTime, $endTime) {
+                      $q->where('start_time', '>=', $startTime)
+                        ->where('end_time', '<=', $endTime);
+                  });
+              });
+        })->first();
+
+        if ($overlappingRequest) {
+            throw new \Exception(
+                'An overtime request already exists that overlaps with this time period. ' .
+                'Existing request: ' . $overlappingRequest->overtime_date .
+                ' (' . $overlappingRequest->start_time . ' - ' . $overlappingRequest->end_time . ')'
+            );
         }
+    }
+
+    public function getFilteredRequests(?string $employeeName = null, ?string $status = null): LengthAwarePaginator
+    {
+        return OverTimeRequests::query()
+            ->with('user')
+            ->when($employeeName, function ($query) use ($employeeName) {
+                $query->whereHas('user', function ($q) use ($employeeName) {
+                    $q->where('name', 'like', "%{$employeeName}%");
+                });
+            })
+            ->when($status, function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            ->latest()
+            ->paginate(10);
     }
 }

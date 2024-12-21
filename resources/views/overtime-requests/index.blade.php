@@ -1,26 +1,55 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    {{-- Error Messages --}}
-    @if($errors->any())
-    <div class="alert alert-danger">
-        <ul class="mb-0">
-            @foreach($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-    @endif
 
-    @if(session('error'))
-    <div class="alert alert-danger">
-        {{ session('error') }}
-    </div>
-    @endif
+<div class="container">
+<link href="{{ asset('css/overtime-managment.css') }}" rel="stylesheet">
+
 
     {{-- Main Content --}}
-    <div class="row justify-content-center">
+    @if(Auth::user()->role === 'manager')
+<div class="card-body mt-5">
+    <form method="GET" action="{{ route('overtime-requests.index') }}" class="row g-3">
+   <!-- Employee Name -->
+   <div class="col-md-4">
+            <label for="employee_name" class="form-label">Employee Name</label>
+            <input type="text" class="form-control " style="height: 60%; border-style:dashed"  id="employee_name" name="employee_name"
+                value="{{ request('employee_name') }}" placeholder="Search by name..." list="employees_list">
+
+            <!-- Datalist for employee names -->
+            <datalist id="employees_list">
+                @foreach ($users as $employee)
+                    <option value="{{ $employee->name }}"></option>
+                @endforeach
+            </datalist>
+        </div>
+
+        <!-- Status -->
+        <div class="col-md-4">
+            <label for="status" class="form-label">Status</label>
+            <select class="form-select h-auto" id="status" name="status">
+                <option value="">All Statuses</option>
+                @foreach($statuses as $statusOption)
+                    <option value="{{ $statusOption }}" {{ request('status') === $statusOption ? 'selected' : '' }}>
+                        {{ ucfirst($statusOption) }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary me-2">
+                <i class="fas fa-search"></i> Filter
+            </button>
+            <a href="{{ route('overtime-requests.index') }}" class="btn btn-secondary">
+                <i class="fas fa-undo"></i> Reset
+            </a>
+        </div>
+    </form>
+</div>
+@endif
+
+    <div class="row justify-content-center mt-5">
         <div class="col-md-12">
             <div class="card shadow-sm">
                 {{-- Card Header --}}

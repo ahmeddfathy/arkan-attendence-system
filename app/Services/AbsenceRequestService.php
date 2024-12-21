@@ -151,5 +151,23 @@ public function calculateAbsenceDays($userId)
 }
 
 
+public function getFilteredRequests($employeeName = null, $status = null)
+{
+    $query = AbsenceRequest::with('user')->latest();
+
+    if ($employeeName) {
+        $query->whereHas('user', function($q) use ($employeeName) {
+            $q->where('name', 'like', "%{$employeeName}%");
+        });
+    }
+
+    if ($status) {
+        $query->where('status', $status);
+    }
+
+    return $query->paginate(10);
+}
+
+
 
 }

@@ -1,26 +1,57 @@
 @extends('layouts.app')
 
 @section('content')
+<link href="{{ asset('css/permission-managment.css') }}" rel="stylesheet">
 <div class="container-fluid py-4">
-    @if($errors->any())
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <div class="d-flex">
-            <div class="me-2">
-                <i class="fas fa-exclamation-circle fa-lg"></i>
+    
+
+    @if(Auth::user()->role === 'manager')
+    <div class="card-body ">
+        <form method="GET" action="{{ route('permission-requests.index') }}" class="row g-3">
+            <div class="col-md-4">
+                <label for="employee_name" class="form-label">Search Employee</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="employee_name"
+                        name="employee_name"
+                        placeholder="Enter employee name..."
+                        value="{{ request('employee_name') }}"
+                        list="employee_names">
+                </div>
+                <datalist id="employee_names">
+                    @foreach($users as $user)
+                    <option value="{{ $user->name }}">
+                        @endforeach
+                </datalist>
             </div>
-            <div>
-                <ul class="mb-0 ps-0" style="list-style: none;">
-                    @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+
+
+            <div class="col-md-4">
+                <label for="status" class="form-label">Filter by Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Statuses</option>
+                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                </select>
             </div>
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-filter me-2"></i>Apply Filters
+                </button>
+                <a href="{{ route('permission-requests.index') }}" class="btn btn-light">
+                    <i class="fas fa-undo me-2"></i>Reset
+                </a>
+            </div>
+        </form>
     </div>
     @endif
 
-    <div class="row">
+    <div class="row mt-5">
         <div class="col-12">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-gradient-primary text-white border-0 d-flex justify-content-between align-items-center py-3">
@@ -548,8 +579,8 @@
         });
 
         // Handle modify response button clicks
-  // Handle modify response button clicks
-  document.querySelectorAll('.modify-response-btn').forEach(button => {
+        // Handle modify response button clicks
+        document.querySelectorAll('.modify-response-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const requestId = this.dataset.requestId;
                 const status = this.dataset.status;

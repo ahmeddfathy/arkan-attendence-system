@@ -18,33 +18,31 @@ class AbsenceRequestController extends Controller
         $this->absenceRequestService = $absenceRequestService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
         if ($user->role === 'manager') {
-            $requests = $this->absenceRequestService->getAllRequests();
+            $employeeName = $request->input('employee_name');
+            $status = $request->input('status');
+
+            $requests = $this->absenceRequestService->getFilteredRequests($employeeName, $status);
             $users = User::select('id', 'name')->get();
+            $absenceDays = null;
 
-            // Calculate approved absence days for all users in the request
-            $absenceDays = $this->absenceRequestService->calculateAbsenceDays($user->id);
-
-            // Load absence days for each user in the requests
-            foreach ($requests as $request) {
-                if ($request->user) {
-                    $request->user->approved_absence_days =
-                        $this->absenceRequestService->calculateAbsenceDays($request->user->id);
+            // If searching for specific employee, calculate their absence days
+            if ($employeeName) {
+                $searchedUser = User::where('name', 'like', "%{$employeeName}%")->first();
+                if ($searchedUser) {
+                    $absenceDays = $this->absenceRequestService->calculateAbsenceDays($searchedUser->id);
                 }
             }
 
-            return view('absence-requests.index', compact('users', 'requests', 'absenceDays'));
-        } elseif ($user->role === 'employee') {
+            return view('absence-requests.index', compact('users', 'requests', 'absenceDays', 'employeeName', 'status'));
+        } else {
             $requests = $this->absenceRequestService->getUserRequests();
             $absenceDays = $this->absenceRequestService->calculateAbsenceDays($user->id);
-
             return view('absence-requests.index', compact('requests', 'absenceDays'));
-        } else {
-            return redirect()->route('welcome');
         }
     }
 

@@ -1,10 +1,12 @@
 @extends('layouts.app')
-
+<head>
+    <link href="{{ asset('css/attendances.css') }}" rel="stylesheet">
+</head>
 @section('content')
 <div class="attendance-section py-5" data-aos="fade-up">
     <div class="container">
         <div class="card shadow-lg border-0 rounded-lg">
-            <div class="card-header bg-gradient text-white p-4">
+            <div class="card-header   p-4">
                 <h3 class="mb-0 d-flex align-items-center">
                     <i class="bi bi-calendar-check me-2"></i> Attendance Records
                 </h3>
@@ -18,14 +20,14 @@
                 @endif
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <a href="{{ route('attendances.create') }}" class="btn btn-primary btn-lg" data-aos="fade-right">
+                    <a href="{{ route('attendances.create') }}" class="btn   btn-lg" style="background-color: #0284C7; color:white" data-aos="fade-right">
                         <i class="bi bi-plus-circle me-2"></i> Add New Attendance
                     </a>
 
                 </div>
 
                 <div class="table-responsive" data-aos="fade-up">
-                    <table class="table table-bordered align-middle">
+                    <table class="table  align-middle">
                         <thead class="table-light">
                             <tr>
                                 <th scope="col">#</th>
@@ -73,62 +75,4 @@
 </div>
 @endsection
 
-@push('styles')
-<style>
-    .attendance-section {
-        background-color: #f8f9fa;
-    }
 
-    .bg-gradient {
-        background: linear-gradient(45deg, #2C3E50, #3498DB);
-    }
-
-    .card {
-        transition: all 0.3s ease;
-    }
-
-    .avatar-circle {
-        width: 35px;
-        height: 35px;
-        background-color: #3498DB;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-    }
-
-    .search-box {
-        max-width: 300px;
-    }
-
-    .search-box .form-control {
-        border-radius: 20px;
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-
-    .table th {
-        font-weight: 600;
-        color: #2C3E50;
-    }
-
-    .badge {
-        padding: 0.5em 1em;
-        border-radius: 20px;
-    }
-
-    .btn-group .btn {
-        border-radius: 20px;
-        margin: 0 2px;
-    }
-
-    @media (max-width: 768px) {
-        .search-box {
-            margin-top: 1rem;
-            max-width: 100%;
-        }
-    }
-</style>
-@endpush

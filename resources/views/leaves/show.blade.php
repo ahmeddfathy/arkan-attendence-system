@@ -1,10 +1,12 @@
 @extends('layouts.app')
-
 @section('content')
+<head>
+    <link href="{{ asset('css/attendances.css') }}" rel="stylesheet">
+</head>
 <div class="leave-details-section py-5" data-aos="fade-up">
     <div class="container">
         <div class="card shadow-lg border-0 rounded-lg">
-            <div class="card-header bg-gradient text-white p-4">
+            <div class="card-header  text-white p-4">
                 <h3 class="mb-0 d-flex align-items-center">
                     <i class="bi bi-person-badge me-2"></i> Leave Details
                 </h3>
@@ -48,45 +50,3 @@
 </div>
 @endsection
 
-@push('styles')
-<style>
-    .leave-details-section {
-        background-color: #f8f9fa;
-    }
-
-    .bg-gradient {
-        background: linear-gradient(45deg, #6A1B9A, #AB47BC);
-    }
-
-    .card {
-        transition: all 0.3s ease;
-    }
-
-    .avatar-circle-lg {
-        width: 100px;
-        height: 100px;
-        background-color: #AB47BC;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 2.5rem;
-    }
-
-    .list-group-item {
-        border: none;
-        padding: 1rem 0;
-    }
-
-    .list-group-item span {
-        font-size: 1rem;
-    }
-
-    .badge {
-        padding: 0.5em 1em;
-        border-radius: 20px;
-    }
-</style>
-@endpush

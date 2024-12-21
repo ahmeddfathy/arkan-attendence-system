@@ -1,16 +1,18 @@
 @extends('layouts.app')
-
+<head>
+    <link href="{{ asset('css/attendances.css') }}" rel="stylesheet">
+</head>
 @section('content')
 <div class="attendance-show-section py-5" data-aos="fade-up">
     <div class="container">
         <div class="card shadow-lg border-0 rounded-lg">
-            <div class="card-header bg-gradient text-white p-4">
+            <div class="card-header  p-4">
                 <h3 class="mb-0 d-flex align-items-center">
                     <i class="bi bi-person-badge me-2"></i> Attendance Details
                 </h3>
             </div>
             <div class="card-body p-4">
-                <table class="table table-bordered">
+                <table class="table ">
                     <tbody>
                         <tr>
                             <th scope="row">Attendance ID</th>
@@ -45,7 +47,7 @@
                     <a href="{{ route('attendances.index') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left me-2"></i> Back to List
                     </a>
-                
+
                     <form action="{{ route('attendances.destroy', $attendance->id) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
@@ -60,31 +62,4 @@
 </div>
 @endsection
 
-@push('styles')
-<style>
-    .attendance-show-section {
-        background-color: #f8f9fa;
-    }
 
-    .bg-gradient {
-        background: linear-gradient(45deg, #2C3E50, #3498DB);
-    }
-
-    .avatar-circle {
-        width: 40px;
-        height: 40px;
-        background-color: #3498DB;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 1.2rem;
-    }
-
-    table th, table td {
-        vertical-align: middle;
-    }
-</style>
-@endpush

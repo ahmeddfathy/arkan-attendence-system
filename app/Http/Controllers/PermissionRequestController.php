@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\User;
 use App\Models\PermissionRequest;
 use App\Services\PermissionRequestService;
@@ -16,25 +17,26 @@ class PermissionRequestController extends Controller
         $this->permissionRequestService = $permissionRequestService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
+        $filters = [
+            'employee_name' => $request->get('employee_name'),
+            'status' => $request->get('status', 'all')
+        ];
 
         if ($user->role === 'manager') {
-            $requests = $this->permissionRequestService->getAllRequests();
+            $requests = $this->permissionRequestService->getAllRequests($filters);
             $users = User::select('id', 'name')->get();
 
-            // إذا كنت تحتاج حساب المتبقي لكل مستخدم
             $remainingMinutes = [];
             foreach ($users as $userData) {
                 $remainingMinutes[$userData->id] = $this->permissionRequestService->getRemainingMinutes($userData->id);
             }
 
-            return view('permission-requests.index', compact('requests', 'users', 'remainingMinutes'));
+            return view('permission-requests.index', compact('requests', 'users', 'remainingMinutes', 'filters'));
         } elseif ($user->role === 'employee') {
             $requests = $this->permissionRequestService->getAllRequests();
-
-
             $remainingMinutes = $this->permissionRequestService->getRemainingMinutes($user->id);
 
             return view('permission-requests.index', compact('requests', 'remainingMinutes'));
@@ -42,7 +44,6 @@ class PermissionRequestController extends Controller
 
         return redirect()->route('welcome');
     }
-
 
     public function store(Request $request)
     {

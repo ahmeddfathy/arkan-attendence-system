@@ -107,7 +107,7 @@
                 <div class="row mt-4">
                     <div class="col-md-6">
                         <label for="employee_number" class="form-label">Employee Number</label>
-                        <input id="employee_number" class="form-control" type="text" name="employee_number" value="{{ old('employee_number') }}" required placeholder="Enter your employee number">
+                        <input id="employee_number" class="form-control" type="text" name="employee_id" value="{{ old('employee_number') }}" required placeholder="Enter your employee number">
                     </div>
 
                     <div class="col-md-6">

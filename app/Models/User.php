@@ -31,7 +31,7 @@ class User extends Authenticatable
         "employee_id",
         'email',
         'password',
-        'employee_number',
+        'employee_id',
         'age',
         'date_of_birth',
         'national_id_number',
@@ -47,8 +47,7 @@ class User extends Authenticatable
         'marital_status',
         'number_of_children',
         'employee_status',
-        'is_online',
-        'last_seen_at'
+
     ];
 
     /**
@@ -89,7 +88,7 @@ class User extends Authenticatable
 
     public function attendanceRecords()
     {
-        
+
         return $this->hasMany(AttendanceRecord::class, 'employee_id', 'employee_id');
     }
 

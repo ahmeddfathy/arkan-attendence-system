@@ -1,10 +1,12 @@
 @extends('layouts.app')
-
 @section('content')
+<head>
+    <link href="{{ asset('css/attendances.css') }}" rel="stylesheet">
+</head>
 <div class="attendance-section py-5" data-aos="fade-up">
     <div class="container">
         <div class="card shadow-lg border-0 rounded-lg">
-            <div class="card-header bg-gradient text-white p-4">
+            <div class="card-header  text-white p-4">
                 <h3 class="mb-0 d-flex align-items-center">
                     <i class="bi bi-calendar-check me-2"></i> Leaves Records
                 </h3>
@@ -23,11 +25,7 @@
                             <i class="bi bi-plus-circle me-2"></i> Check Out
                         </a>
                     </div>
-                    <div class="col-md-6">
-                        <div class="search-box" data-aos="fade-left">
-                            <input type="text" class="form-control" placeholder="Search records...">
-                        </div>
-                    </div>
+
                 </div>
 
                 <div class="table-responsive" data-aos="fade-up">
@@ -82,85 +80,5 @@
     </div>
 </div>
 
-@push('styles')
-<style>
-    .attendance-section {
-        background-color: #f8f9fa;
-    }
 
-    .bg-gradient {
-        background: linear-gradient(45deg, #2C3E50, #3498DB);
-    }
-
-    .avatar-circle {
-        width: 35px;
-        height: 35px;
-        background-color: #3498DB;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-    }
-
-    .search-box {
-        max-width: 300px;
-    }
-
-    .search-box .form-control {
-        border-radius: 20px;
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-
-    .btn-group .btn {
-        border-radius: 20px;
-        margin: 0 2px;
-    }
-
-    @media (max-width: 768px) {
-        .card-body {
-            padding: 1rem;
-        }
-
-        .search-box {
-            max-width: 100%;
-            margin-top: 1rem;
-        }
-
-        .btn-lg {
-            font-size: 14px;
-            padding: 0.75rem 1rem;
-        }
-
-        .table {
-            font-size: 14px;
-        }
-    }
-
-    .table-responsive {
-    overflow-x: auto; /* السماح بتمرير الجدول عند الأحجام الصغيرة */
-}
-
-@media (max-width: 768px) {
-    .avatar-circle {
-        width: 30px;
-        height: 30px;
-        font-size: 12px;
-    }
-
-    .btn-group .btn {
-        font-size: 12px;
-        padding: 0.5rem;
-    }
-
-    .table th, .table td {
-        font-size: 14px;
-        white-space: nowrap;
-    }
-}
-
-</style>
-@endpush
 @endsection

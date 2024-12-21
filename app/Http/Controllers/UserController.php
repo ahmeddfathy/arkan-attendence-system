@@ -10,48 +10,46 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::all();
-        return view('users.index', compact('users'));
+        $query = User::query();
+
+        // Search functionality
+        if ($request->has('search')) {
+            $search = $request->get('search');
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        // Pagination
+        $users = $query->paginate(10);
+        $employees = User::all();
+
+        return view('users.index', compact('users' , 'employees'));
+    }
+
+    public function show($id)
+    {
+        $user = User::findOrFail($id);
+        return view('users.show', compact('user'));
+    }
+
+    public function destroy($id)
+    {
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return redirect()->route('users.index')
+            ->with('success', 'User deleted successfully');
     }
 
     public function import(Request $request)
     {
-
         Excel::import(new UsersImport, $request->file('file'));
-        dd('imported successfully');
+        return redirect()->route('users.index')
+            ->with('success', 'Users imported successfully');
     }
 
-    public function import2(Request $request)
-    {
-        $file = $request->file('file');
-        $filePath = $file->store('files_excel');
-        $data = Excel::toArray(new UsersImport2, $file);
-        $columns = array_keys($data[0][0]);
-        $db_fields = ['name', 'email', 'password'];
-        $request->session()->put('file_excel_import', $filePath);
-        return view('users.import_show', compact('db_fields', 'columns'));
 
-    }
-
-    public function store(Request $request)
-    {
-        $fields = $request->input('fields');
-        $filePath = session('file_excel_import');
-        $file = storage_path('app/' . $filePath);
-        $data = Excel::toArray(new UsersImport2, $file)[0];
-        foreach ($data as $row) {
-            $data_insert = [];
-            foreach ($fields as $key => $value) {
-                $data_insert[$value] = $row[$key];
-            }
-            User::create($data_insert);
-        }
-        dd('saved successfully');
-
-
-    }
 
 
 }

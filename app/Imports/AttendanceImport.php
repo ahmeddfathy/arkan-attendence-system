@@ -4,6 +4,7 @@ namespace App\Imports;
 use App\Models\AttendanceRecord;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class AttendanceImport implements ToModel
 {
@@ -20,6 +21,7 @@ class AttendanceImport implements ToModel
         // Format attendance date
 
         $attendanceDate = $this->formatDate($row[2]);
+        
 
         // Entry and exit times
         $entryTime = $this->formatTime($row[7]);
@@ -53,11 +55,24 @@ class AttendanceImport implements ToModel
     // Helper to format date from Excel serial number
     private function formatDate($excelDate)
     {
-        if (!empty($excelDate) && is_numeric($excelDate)) {
-            return Carbon::instance(
-                \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($excelDate)
-            )->format('Y-m-d');
+        // If the input is already in d/m/y format
+        if (is_string($excelDate) && preg_match('/^\d{2}\/\d{2}\/\d{2}$/', $excelDate)) {
+            try {
+                return Carbon::createFromFormat('d/m/y', $excelDate);
+            } catch (\Exception $e) {
+                return null;
+            }
         }
+
+        // If the input is an Excel numeric date
+        if (!empty($excelDate) && is_numeric($excelDate)) {
+            try {
+                return Carbon::instance(Date::excelToDateTimeObject($excelDate));
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
+
         return null;
     }
 

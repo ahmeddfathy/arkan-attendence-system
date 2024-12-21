@@ -1,6 +1,8 @@
 @extends('layouts.app')
-
 @section('content')
+<head>
+    <link href="{{ asset('css/attendances.css') }}" rel="stylesheet">
+</head>
 <div class="card mt-5">
     <div class="card-header bg-primary text-white">
         <h3>Add New Attendance</h3>

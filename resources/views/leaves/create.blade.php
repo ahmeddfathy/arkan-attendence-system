@@ -1,12 +1,14 @@
 @extends('layouts.app')
-
 @section('content')
+<head>
+    <link href="{{ asset('css/attendances.css') }}" rel="stylesheet">
+</head>
 <div class="create-attendance-section py-5" data-aos="fade-up">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card shadow-lg border-0 rounded-lg">
-                    <div class="card-header bg-gradient text-white p-4">
+                    <div class="card-header  text-white p-4">
                         <h3 class="mb-0 d-flex align-items-center">
                             <i class="bi bi-plus-circle me-2"></i>
                             New Attendance Record
@@ -55,67 +57,6 @@
 </div>
 @endsection
 
-@push('styles')
-<style>
-    .create-attendance-section {
-        background-color: #f8f9fa;
-        min-height: calc(100vh - 76px);
-    }
-
-    .bg-gradient {
-        background: linear-gradient(45deg, #2C3E50, #3498DB);
-    }
-
-    .card {
-        transition: all 0.3s ease;
-    }
-
-    .form-label {
-        font-weight: 500;
-        color: #2C3E50;
-        margin-bottom: 0.5rem;
-    }
-
-    .form-control, .form-select {
-        border-radius: 10px;
-        padding: 0.75rem 1rem;
-        border: 1px solid #dee2e6;
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus, .form-select:focus {
-        border-color: #3498DB;
-        box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
-    }
-
-    .btn {
-        border-radius: 10px;
-        padding: 0.75rem 1.5rem;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-
-    .btn-primary {
-        background: linear-gradient(45deg, #2C3E50, #3498DB);
-        border: none;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
-    }
-
-    .btn-outline-secondary:hover {
-        transform: translateY(-2px);
-    }
-
-    @media (max-width: 768px) {
-        .card {
-            margin: 1rem;
-        }
-    }
-</style>
-@endpush
 
 @push('scripts')
 <script>

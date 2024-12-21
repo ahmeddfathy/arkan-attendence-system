@@ -1,225 +1,231 @@
 <!DOCTYPE html>
-<html lang="{{ str_contains($user->name, 'أ') ? 'ar' : 'en' }}" dir="{{ str_contains($user->name, 'أ') ? 'rtl' : 'ltr' }}">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Report - Arkan Economic Consultancy</title>
+    <title>تقرير الحضور - أركان للاستشارات الاقتصادية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
-        @font-face {
-            font-family: 'Cairo';
-            src: url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+      @page {
+            margin: 20px;
+            size: A4 landscape;
         }
 
         * {
-            margin: 0;
-            padding: 0;
             box-sizing: border-box;
+            font-family: "Cairo", "Amiri", "Tajawal", "DejaVu Sans", sans-serif !important;
         }
 
         body {
-            font-family: 'Cairo', Arial, sans-serif;
-            line-height: 1.6;
-            background: #fff;
-            color: #1a1a1a;
-            font-size: 14px;
+            direction: rtl;
+            text-align: right;
+            margin: 0;
+            padding: 15px;
+            font-size: 13px;
+            line-height: 1.4;
         }
 
         .report-container {
             width: 100%;
-            max-width: 1140px;
-            margin: 0 auto;
-            padding: 20px;
         }
 
-        .report-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 20px;
+        /* Header Styles */
+        .company-header {
+            text-align: center;
+            margin-bottom: 20px;
         }
 
-        .company-logo {
+        .company-header img {
             width: 100px;
-            height: auto;
+            height: 100px;
         }
 
-        .company-details {
-            text-align: {{ str_contains($user->name, 'أ') ? 'right' : 'left' }};
-        }
-
-        .company-details h1 {
-            color: #1e3a8a;
+        .company-header h1 {
+            color: #4AA4E8;
             font-size: 24px;
-            margin-bottom: 5px;
+            margin: 0 0 10px 0;
         }
 
+        .company-header p {
+            margin: 5px 0;
+        }
+
+        /* Employee Info Styles */
         .employee-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 8px;
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
         }
 
-        .info-group {
-            background: white;
-            padding: 15px;
-            border-radius: 6px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        .employee-info td {
+            padding: 8px;
+            border: 1px solid #E5E7EB;
+            background: #f8fafc;
         }
 
         .info-label {
-            color: #6b7280;
-            font-size: 12px;
-            margin-bottom: 5px;
+            color: #4AA4E8;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 3px;
         }
 
-        .info-value {
-            color: #111827;
-            font-weight: 600;
-        }
-
+        /* Attendance Table Styles */
         .attendance-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         .attendance-table th,
         .attendance-table td {
-            padding: 12px;
-            text-align: {{ str_contains($user->name, 'أ') ? 'right' : 'left' }};
-            border: 1px solid #e5e7eb;
+            border: 1px solid #E5E7EB;
+            padding: 4px;
+            text-align: center;
+            font-size: 10px;
+            white-space: nowrap;
         }
 
         .attendance-table th {
-            background: #1e3a8a;
+            background: #4AA4E8;
             color: white;
-            font-weight: 600;
-            white-space: nowrap;
         }
 
         .attendance-table tr:nth-child(even) {
             background: #f8fafc;
         }
 
+        /* Status Badge Styles */
         .status-badge {
-            display: inline-block;
-            padding: 4px 8px;
+            padding: 3px 6px;
             border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 9px;
+            font-weight: bold;
+            display: inline-block;
         }
 
-        .status-present { background: #dcfce7; color: #166534; }
-        .status-absent { background: #fee2e2; color: #991b1b; }
-        .status-late { background: #fef3c7; color: #92400e; }
+        .status-present { background: #10B981; color: white; }
+        .status-absent { background: #EF4444; color: white; }
+        .status-late { background: #F59E0B; color: white; }
 
+        /* Print-specific styles */
         @media print {
             body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+                padding: 0;
+                font-size: 12px;
             }
 
-            .report-container {
-                width: 100%;
-                max-width: none;
-                margin: 0;
-                padding: 20px;
-            }
-
-            .attendance-table th {
-                background-color: #1e3a8a !important;
-                color: white !important;
-            }
 
             .status-badge {
-                border: 1px solid currentColor;
+                font-size: 8px;
+                padding: 2px 4px;
             }
         }
 
-        @page {
-            size: A4 landscape;
-            margin: 1cm;
+        /* Responsive styles */
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        @media screen and (max-width: 1024px) {
+            .attendance-table {
+                min-width: 1200px;
+            }
+
+            .employee-info td {
+                display: block;
+                width: 100%;
+            }
+        }
+        .attendance-table th,
+        .attendance-table td {
+            direction: rtl;
+            unicode-bidi: bidi-override;
+        }
+
+        .status-badge {
+            direction: rtl;
+            unicode-bidi: bidi-override;
         }
     </style>
 </head>
 <body>
     <div class="report-container">
-        <header class="report-header">
-            <div class="logo-container">
-                <img src="{{ public_path('images/logo.png') }}" alt="Arkan Logo" class="company-logo">
-            </div>
-            <div class="company-details">
-                <h1>{{ __('Arkan Economic Consultancy') }}</h1>
-                <p>{{ __('Riyadh, Kingdom of Saudi Arabia') }}</p>
-                <p>{{ __('Phone:') }} +966-XX-XXXXXXX | {{ __('Email:') }} info@arkan.com</p>
-            </div>
-        </header>
-
-        <div class="employee-info">
-            <div class="info-group">
-                <div class="info-label">{{ __('Employee Name') }}</div>
-                <div class="info-value">{{ $user->name }}</div>
-            </div>
-            <div class="info-group">
-                <div class="info-label">{{ __('Employee ID') }}</div>
-                <div class="info-value">{{ $user->employee_id }}</div>
-            </div>
-            <div class="info-group">
-                <div class="info-label">{{ __('Department') }}</div>
-                <div class="info-value">{{ $user->department }}</div>
-            </div>
-            <div class="info-group">
-                <div class="info-label">{{ __('Report Period') }}</div>
-                <div class="info-value">{{ now()->format('F Y') }}</div>
-            </div>
+        <!-- Company Header -->
+        <div class="company-header">
+            <img src="https://th.bing.com/th/id/OIP.bz3odABZqEOm4oHcNvrL5QHaHa?rs=1&pid=ImgDetMain" alt="Logo">
+            <h1>أركان للاستشارات الاقتصادية</h1>
+            <p>الرياض، المملكة العربية السعودية</p>
+            <p> Email: info@arkan.com</p>
         </div>
 
-        <table class="attendance-table">
-            <thead>
-                <tr>
-                    <th>{{ __('Date') }}</th>
-                    <th>{{ __('Day') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th>{{ __('Shift') }}</th>
-                    <th>{{ __('Shift Hours') }}</th>
-                    <th>{{ __('Check In') }}</th>
-                    <th>{{ __('Check Out') }}</th>
-                    <th>{{ __('Delay (min)') }}</th>
-                    <th>{{ __('Early Leave (min)') }}</th>
-                    <th>{{ __('Overtime (hrs)') }}</th>
-                    <th>{{ __('Penalty') }}</th>
-                    <th>{{ __('Notes') }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($attendanceRecords as $record)
-                <tr>
-                    <td>{{ \Carbon\Carbon::parse($record->attendance_date)->format('d M Y') }}</td>
-                    <td>{{ \Carbon\Carbon::parse($record->attendance_date)->format('l') }}</td>
-                    <td>
-                        <span class="status-badge status-{{ strtolower($record->status) }}">
-                            {{ __($record->status) }}
-                        </span>
-                    </td>
-                    <td>{{ $record->shift }}</td>
-                    <td>{{ $record->shift_hours }}</td>
-                    <td>{{ $record->entry_time ? \Carbon\Carbon::parse($record->entry_time)->format('h:i A') : '-' }}</td>
-                    <td>{{ $record->exit_time ? \Carbon\Carbon::parse($record->exit_time)->format('h:i A') : '-' }}</td>
-                    <td>{{ $record->delay_minutes ?: '-' }}</td>
-                    <td>{{ $record->early_minutes ?: '-' }}</td>
-                    <td>{{ $record->overtime_hours ?: '-' }}</td>
-                    <td>{{ $record->penalty ?: '-' }}</td>
-                    <td>{{ $record->notes ?: '-' }}</td>
-                </tr>
-                @endforeach
-            </tbody>
+        <!-- Employee Info -->
+        <table class="employee-info">
+            <tr>
+                <td width="25%">
+                    <span class="info-label">اسم الموظف</span>
+                    {{ $user->name }}
+                </td>
+                <td width="25%">
+                    <span class="info-label">الرقم الوظيفي</span>
+                    {{ $user->employee_id }}
+                </td>
+                <td width="25%">
+                    <span class="info-label">القسم</span>
+                    {{ $user->department }}
+                </td>
+                <td width="25%">
+                    <span class="info-label">فترة التقرير</span>
+                    {{ __('December 2024') }}
+                </td>
+            </tr>
         </table>
+
+        <!-- Attendance Table -->
+        <div class="table-wrapper">
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>اليوم</th>
+                        <th>الحالة</th>
+                        <th>الوردية</th>
+                        <th>ساعات العمل</th>
+                        <th>وقت الحضور</th>
+                        <th>وقت الانصراف</th>
+                        <th>التأخير (دقيقة)</th>
+                        <th>الخروج المبكر (دقيقة)</th>
+                        <th>العمل الإضافي (ساعة)</th>
+                        <th>الجزاء</th>
+                        <th>ملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($attendanceRecords as $record)
+                    <tr>
+                        <td>{{ $record->attendance_date }}</td>
+                        <td>{{ __($record->day) }}</td>
+                        <td>
+                            <span class="status-badge status-{{ strtolower($record->status) }}">
+                                {{ __($record->status) }}
+                            </span>
+                        </td>
+                        <td>{{ $record->shift }}</td>
+                        <td>{{ $record->shift_hours }}</td>
+                        <td>{{ $record->entry_time ?: '-' }}</td>
+                        <td>{{ $record->exit_time ?: '-' }}</td>
+                        <td>{{ $record->delay_minutes ?: '-' }}</td>
+                        <td>{{ $record->early_minutes ?: '-' }}</td>
+                        <td>{{ $record->overtime_hours ?: '-' }}</td>
+                        <td>{{ $record->penalty ?: '-' }}</td>
+                        <td>{{ $record->notes ?: '-' }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
 </body>
 </html>

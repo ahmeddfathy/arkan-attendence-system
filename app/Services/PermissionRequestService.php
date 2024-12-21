@@ -6,24 +6,179 @@ use App\Models\PermissionRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Violation;
+use Illuminate\Pagination\LengthAwarePaginator;
+use App\Services\ViolationService;
 class PermissionRequestService
 {
+    protected $violationService;
+
+    public function __construct(ViolationService $violationService)
+    {
+        $this->violationService = $violationService;
+    }
+
+
     const MONTHLY_LIMIT_MINUTES = 180;
 
-    public function getAllRequests()
+    public function getAllRequests($filters = []): LengthAwarePaginator
     {
         $user = Auth::user();
+        $query = PermissionRequest::with('user');
 
-        if ($user->role === 'manager') {
-            return PermissionRequest::with('user')
-                ->latest()
-                ->paginate(10);
+        if (!empty($filters['employee_name'])) {
+            $query->whereHas('user', function($q) use ($filters) {
+                $q->where('name', 'like', '%' . $filters['employee_name'] . '%');
+            });
         }
 
-        return PermissionRequest::where('user_id', $user->id)
+        if (!empty($filters['status']) && $filters['status'] !== 'all') {
+            $query->where('status', $filters['status']);
+        }
+
+        if ($user->role === 'manager') {
+            return $query->latest()->paginate(10);
+        }
+
+        return $query->where('user_id', $user->id)
             ->latest()
             ->paginate(10);
     }
+
+    public function createRequest(array $data): array
+    {
+        $userId = Auth::id();
+        $validation = $this->validateTimeRequest(
+            $userId,
+            $data['departure_time'],
+            $data['return_time']
+        );
+
+        if (!$validation['valid']) {
+            return [
+                'success' => false,
+                'message' => $validation['message']
+            ];
+        }
+
+        $remainingMinutes = $this->getRemainingMinutes($userId);
+
+        PermissionRequest::create([
+            'user_id' => $userId,
+            'departure_time' => $data['departure_time'],
+            'return_time' => $data['return_time'],
+            'minutes_used' => $validation['duration'],
+            'reason' => $data['reason'],
+            'remaining_minutes' => $remainingMinutes - $validation['duration'],
+            'status' => 'pending',
+            'returned_on_time' => false,
+        ]);
+
+        return ['success' => true];
+    }
+
+    public function updateRequest(PermissionRequest $request, array $data): array
+    {
+        $userId = Auth::id();
+        $validation = $this->validateTimeRequest(
+            $userId,
+            $data['departure_time'],
+            $data['return_time'],
+            $request->id
+        );
+
+        if (!$validation['valid']) {
+            return [
+                'success' => false,
+                'message' => $validation['message']
+            ];
+        }
+
+        $request->update([
+            'departure_time' => $data['departure_time'],
+            'return_time' => $data['return_time'],
+            'reason' => $data['reason'],
+            'minutes_used' => $validation['duration'],
+        ]);
+
+        return ['success' => true];
+    }
+
+    public function updateStatus(PermissionRequest $request, array $data): array
+    {
+        $request->update([
+            'status' => $data['status'],
+            'rejection_reason' => $data['status'] === 'rejected' ? $data['rejection_reason'] : null,
+        ]);
+
+        return ['success' => true];
+    }
+
+    public function updateReturnStatus(PermissionRequest $request, int $returnStatus): array
+    {
+        $request->update(['returned_on_time' => $returnStatus]);
+        $this->violationService->handleReturnViolation($request, $returnStatus);
+
+        return ['success' => true];
+    }
+
+    public function getRemainingMinutes(int $userId): int
+    {
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
+
+        $usedMinutes = PermissionRequest::where('user_id', $userId)
+            ->whereBetween('departure_time', [$startOfMonth, $endOfMonth])
+            ->whereIn('status', ['pending', 'approved'])
+            ->sum('minutes_used');
+
+        return max(0, self::MONTHLY_LIMIT_MINUTES - $usedMinutes);
+    }
+
+    private function validateTimeRequest(int $userId, string $departureTime, string $returnTime, ?int $excludeRequestId = null): array
+    {
+        if (Carbon::parse($returnTime) <= Carbon::parse($departureTime)) {
+            return [
+                'valid' => false,
+                'message' => 'Return time must be after departure time.'
+            ];
+        }
+
+        $duration = Carbon::parse($departureTime)->diffInMinutes(Carbon::parse($returnTime));
+        $remainingMinutes = $this->getRemainingMinutes($userId);
+
+        if ($duration > $remainingMinutes) {
+            return [
+                'valid' => false,
+                'message' => "Cannot request more than {$remainingMinutes} minutes remaining."
+            ];
+        }
+
+        if ($this->hasTimeOverlap($userId, $departureTime, $returnTime, $excludeRequestId)) {
+            return [
+                'valid' => false,
+                'message' => 'You already have a permission request during this time period.'
+            ];
+        }
+
+        return ['valid' => true, 'duration' => $duration];
+    }
+
+    private function hasTimeOverlap(int $userId, string $departureTime, string $returnTime, ?int $excludeRequestId = null): bool
+    {
+        $query = PermissionRequest::where('user_id', $userId)
+            ->where(function ($query) use ($departureTime, $returnTime) {
+                $query->where('departure_time', '<=', $returnTime)
+                      ->where('return_time', '>=', $departureTime);
+            })
+            ->whereIn('status', ['pending', 'approved']);
+
+        if ($excludeRequestId) {
+            $query->where('id', '!=', $excludeRequestId);
+        }
+
+        return $query->exists();
+    }
+
 
     public function createRequestForUser(int $userId, array $data)
     {
@@ -53,17 +208,6 @@ class PermissionRequestService
         return ['success' => true];
     }
 
-    public function updateStatus(PermissionRequest $request, array $data)
-    {
-        $updateData = [
-            'status' => $data['status'],
-            'rejection_reason' => $data['status'] === 'rejected' ? $data['rejection_reason'] : null,
-        ];
-
-        $request->update($updateData);
-
-        return ['success' => true];
-    }
 
 
     public function resetStatus(PermissionRequest $request)
@@ -89,90 +233,9 @@ class PermissionRequestService
         return $this->getAllRequests();
     }
 
-    public function createRequest(array $data)
-    {
-        $userId = Auth::id();
 
 
-        $departureTime = Carbon::parse($data['departure_time']);
-        $returnTime = Carbon::parse($data['return_time']);
-        $durationMinutes = $departureTime->diffInMinutes($returnTime);
 
-
-        $remainingMinutes = $this->getRemainingMinutes($userId);
-
-        if ($durationMinutes > $remainingMinutes) {
-            return [
-                'success' => false,
-                'message' => "لا يمكنك طلب إذن أكثر من {$remainingMinutes} دقيقة المتبقية."
-            ];
-        }
-
-        PermissionRequest::create([
-            'user_id' => $userId,
-            'departure_time' => $data['departure_time'],
-            'return_time' => $data['return_time'],
-            'minutes_used' => $durationMinutes,
-            'reason' => $data['reason'],
-            'remaining_minutes' => $remainingMinutes - $durationMinutes, // الرصيد المتبقي بعد الطرح
-            'status' => 'pending',
-            'returned_on_time' => false,
-        ]);
-
-        return ['success' => true];
-    }
-
-    public function getRemainingMinutes(int $userId): int
-    {
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth = Carbon::now()->endOfMonth();
-
-        $usedMinutes = PermissionRequest::where('user_id', $userId)
-            ->whereBetween('departure_time', [$startOfMonth, $endOfMonth])
-            ->where('status', 'approved')
-            ->sum('minutes_used');
-
-        return max(0, self::MONTHLY_LIMIT_MINUTES - $usedMinutes);
-    }
-
-    public function updateRequest(PermissionRequest $request, array $data)
-    {
-        $userId = Auth::id();
-
-        // Validate updated departure and return times
-        $departureTime = Carbon::parse($data['departure_time']);
-        $returnTime = Carbon::parse($data['return_time']);
-
-        // Ensure returnTime is after departureTime
-        if ($returnTime <= $departureTime) {
-            return [
-                'success' => false,
-                'message' => 'Return time must be after departure time.'
-            ];
-        }
-
-        // Calculate the new duration in minutes (always positive)
-        $newDurationMinutes = $departureTime->diffInMinutes($returnTime);
-
-        $currentUsedMinutes = $request->minutes_used;
-        $additionalMinutes = max(0, $newDurationMinutes - $currentUsedMinutes);
-
-        if ($additionalMinutes > 0 && !$this->canRequestPermission($userId, $additionalMinutes)) {
-            return [
-                'success' => false,
-                'message' => 'The new duration would exceed your monthly permission limit.'
-            ];
-        }
-
-        $request->update([
-            'departure_time' => $data['departure_time'],
-            'return_time' => $data['return_time'],
-            'reason' => $data['reason'],
-            'minutes_used' => $newDurationMinutes,
-        ]);
-
-        return ['success' => true];
-    }
 
     public function deleteRequest(PermissionRequest $request)
     {
@@ -183,30 +246,5 @@ class PermissionRequestService
 
 
 
-    private function canRequestPermission(int $userId, int $requestedMinutes): bool
-    {
-        return $this->getRemainingMinutes($userId) >= $requestedMinutes;
-    }
-
-    public function updateReturnStatus(PermissionRequest $request, int $returnStatus)
-    {
-        $request->update([
-            'returned_on_time' => $returnStatus
-        ]);
-
-        // If did not return on time (status = 2), create a violation
-    
-
-        if ($returnStatus === 2) {
-            Violation::create([
-                'user_id' => $request->user_id,
-                'permission_requests_id' =>$request->id, // Fixed the column name
-                'reason' => 'Did not return on time from approved leave',
-                'manager_mistake' => false
-            ]);
-        }
-
-        return ['success' => true];
-    }
 
 }
