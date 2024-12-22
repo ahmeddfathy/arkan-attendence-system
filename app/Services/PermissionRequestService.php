@@ -5,16 +5,22 @@ namespace App\Services;
 use App\Models\PermissionRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Violation;
+
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Services\ViolationService;
+use App\Services\NotificationPermissionService;
+
 class PermissionRequestService
 {
     protected $violationService;
+    protected $notificationService;
 
-    public function __construct(ViolationService $violationService)
-    {
+    public function __construct(
+        ViolationService $violationService,
+        NotificationPermissionService $notificationService
+    ) {
         $this->violationService = $violationService;
+        $this->notificationService = $notificationService;
     }
 
 
@@ -26,7 +32,7 @@ class PermissionRequestService
         $query = PermissionRequest::with('user');
 
         if (!empty($filters['employee_name'])) {
-            $query->whereHas('user', function($q) use ($filters) {
+            $query->whereHas('user', function ($q) use ($filters) {
                 $q->where('name', 'like', '%' . $filters['employee_name'] . '%');
             });
         }
@@ -62,7 +68,7 @@ class PermissionRequestService
 
         $remainingMinutes = $this->getRemainingMinutes($userId);
 
-        PermissionRequest::create([
+        $request = PermissionRequest::create([
             'user_id' => $userId,
             'departure_time' => $data['departure_time'],
             'return_time' => $data['return_time'],
@@ -72,6 +78,8 @@ class PermissionRequestService
             'status' => 'pending',
             'returned_on_time' => false,
         ]);
+
+        $this->notificationService->createPermissionRequestNotification($request);
 
         return ['success' => true];
     }
@@ -100,6 +108,8 @@ class PermissionRequestService
             'minutes_used' => $validation['duration'],
         ]);
 
+        $this->notificationService->notifyPermissionModified($request);
+
         return ['success' => true];
     }
 
@@ -109,6 +119,8 @@ class PermissionRequestService
             'status' => $data['status'],
             'rejection_reason' => $data['status'] === 'rejected' ? $data['rejection_reason'] : null,
         ]);
+
+        $this->notificationService->createPermissionStatusUpdateNotification($request);
 
         return ['success' => true];
     }
@@ -168,7 +180,7 @@ class PermissionRequestService
         $query = PermissionRequest::where('user_id', $userId)
             ->where(function ($query) use ($departureTime, $returnTime) {
                 $query->where('departure_time', '<=', $returnTime)
-                      ->where('return_time', '>=', $departureTime);
+                    ->where('return_time', '>=', $departureTime);
             })
             ->whereIn('status', ['pending', 'approved']);
 
@@ -212,18 +224,26 @@ class PermissionRequestService
 
     public function resetStatus(PermissionRequest $request)
     {
-        return $request->update([
+        $request->update([
             'status' => 'pending',
             'rejection_reason' => null
         ]);
+
+        $this->notificationService->notifyManagerResponseDeleted($request);
+
+        return $request;
     }
 
     public function modifyResponse(PermissionRequest $request, array $data)
     {
-        return $request->update([
+        $request->update([
             'status' => $data['status'],
             'rejection_reason' => $data['status'] === 'rejected' ? $data['rejection_reason'] : null
         ]);
+
+        $this->notificationService->notifyManagerResponseModified($request);
+
+        return $request;
     }
 
 
@@ -239,12 +259,9 @@ class PermissionRequestService
 
     public function deleteRequest(PermissionRequest $request)
     {
+        $this->notificationService->notifyPermissionDeleted($request);
         $request->delete();
 
         return ['success' => true];
     }
-
-
-
-
 }

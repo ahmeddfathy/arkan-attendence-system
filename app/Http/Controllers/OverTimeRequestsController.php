@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
-
 class OverTimeRequestsController extends Controller
 {
     protected $overTimeRequestService;
@@ -17,6 +16,7 @@ class OverTimeRequestsController extends Controller
     {
         $this->overTimeRequestService = $overTimeRequestService;
     }
+
 
     public function index(Request $request)
     {
@@ -89,21 +89,20 @@ class OverTimeRequestsController extends Controller
     }
 
 
-public function destroy($id)
-{
+    public function destroy($id)
+    {
+        try {
+            $overTimeRequest = OverTimeRequests::findOrFail($id);
 
-    $overTimeRequest = OverTimeRequests::find($id);
+            $this->overTimeRequestService->deleteRequest($overTimeRequest);
 
-    if (!$overTimeRequest) {
-        return redirect()->back()->with('error', 'Overtime request not found.');
+            return redirect()->route('overtime-requests.index')
+                ->with('success', 'Overtime request deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Overtime request not found.');
+        }
     }
-
-
-    $overTimeRequest->delete();
-
-    return redirect()->route('overtime-requests.index')
-        ->with('success', 'Overtime request deleted successfully.');
-}
 
 
     public function updateStatus(Request $request, OverTimeRequests $overTimeRequest)
@@ -126,9 +125,10 @@ public function destroy($id)
         }
     }
 
+
     public function modifyResponse(Request $request, OverTimeRequests $overTimeRequest)
     {
-        $request->validate([
+        $validated = $request->validate([
             'status' => 'required|in:approved,rejected',
             'rejection_reason' => 'required_if:status,rejected|nullable|string|max:255'
         ]);
@@ -138,7 +138,7 @@ public function destroy($id)
                 return $this->unauthorized();
             }
 
-            $this->overTimeRequestService->modifyResponse($overTimeRequest, $request->all());
+            $this->overTimeRequestService->modifyResponse($overTimeRequest, $validated);
 
             return $this->successResponse('overtime-requests.index', 'Response updated successfully.');
         } catch (\Exception $e) {

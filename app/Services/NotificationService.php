@@ -10,7 +10,6 @@ class NotificationService
 {
     public function createLeaveRequestNotification(AbsenceRequest $request): void
     {
-        // Notify all managers
         User::where('role', 'manager')->each(function ($manager) use ($request) {
             Notification::create([
                 'user_id' => $manager->id,
@@ -27,6 +26,10 @@ class NotificationService
 
     public function createStatusUpdateNotification(AbsenceRequest $request): void
     {
+        // Delete any existing status notifications for this request
+        $this->deleteStatusNotifications($request);
+
+        // Create new notification
         Notification::create([
             'user_id' => $request->user_id,
             'type' => 'leave_request_status_update',
@@ -38,6 +41,50 @@ class NotificationService
             ],
             'related_id' => $request->id
         ]);
+    }
+
+    public function deleteStatusNotifications(AbsenceRequest $request): void
+    {
+        Notification::where('related_id', $request->id)
+            ->where('type', 'leave_request_status_update')
+            ->delete();
+    }
+
+    public function notifyRequestModified(AbsenceRequest $request): void
+    {
+        // Delete existing notifications for this request modification
+        Notification::where('related_id', $request->id)
+            ->where('type', 'leave_request_modified')
+            ->delete();
+
+        User::where('role', 'manager')->each(function ($manager) use ($request) {
+            Notification::create([
+                'user_id' => $manager->id,
+                'type' => 'leave_request_modified',
+                'data' => [
+                    'message' => "{$request->user->name} has modified their leave request",
+                    'request_id' => $request->id,
+                    'date' => $request->absence_date->format('Y-m-d'),
+                ],
+                'related_id' => $request->id
+            ]);
+        });
+    }
+
+    public function notifyRequestDeleted(AbsenceRequest $request): void
+    {
+        User::where('role', 'manager')->each(function ($manager) use ($request) {
+            Notification::create([
+                'user_id' => $manager->id,
+                'type' => 'leave_request_deleted',
+                'data' => [
+                    'message' => "{$request->user->name} has deleted their leave request",
+                    'request_id' => $request->id,
+                    'date' => $request->absence_date->format('Y-m-d'),
+                ],
+                'related_id' => $request->id
+            ]);
+        });
     }
 
     public function getUnreadCount(User $user): int

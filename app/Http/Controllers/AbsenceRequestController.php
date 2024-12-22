@@ -154,15 +154,22 @@ class AbsenceRequestController extends Controller
 
     public function modifyResponse(Request $request, $id)
     {
+        $user = Auth::user();
+        if ($user->role !== 'manager') {
+            return redirect()->route('welcome')->with('error', 'Unauthorized action.');
+        }
+
         $absenceRequest = AbsenceRequest::findOrFail($id);
 
+        $validated = $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'rejection_reason' => 'required_if:status,rejected|nullable|string|max:255'
+        ]);
 
-        $absenceRequest->status = $request->status;
-        $absenceRequest->rejection_reason = $request->rejection_reason;
+        $this->absenceRequestService->modifyResponse($absenceRequest, $validated);
 
-        $absenceRequest->save();
-
-        return redirect()->route('absence-requests.index')->with('success', 'Response updated successfully');
+        return redirect()->route('absence-requests.index')
+            ->with('success', 'Response updated successfully');
     }
 
     public function resetStatus(AbsenceRequest $absenceRequest)
