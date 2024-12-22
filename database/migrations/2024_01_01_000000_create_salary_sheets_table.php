@@ -10,7 +10,10 @@ return new class extends Migration
     {
         Schema::create('salary_sheets', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->unsignedInteger('employee_id') -> nullable();
+            $table->foreign('employee_id')
+            ->references('employee_id')
+            ->on('users');
             $table->string('month');
             $table->string('file_path');
             $table->string('original_filename');

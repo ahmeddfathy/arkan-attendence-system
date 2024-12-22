@@ -1,12 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
+<head>
+<link href="{{ asset('css/salary-sheets.css') }}" rel="stylesheet">
+</head>
+<div class="container">
     <div class="mb-8">
         <h1 class="text-2xl font-bold mb-4">Salary Sheets Upload</h1>
-        
+
         <!-- Drag and Drop Zone -->
-        <div 
+        <div
             id="dropzone"
             class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors duration-200"
         >
@@ -14,18 +17,18 @@
                 <i class="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
                 <p class="text-gray-600">Drag and drop salary sheet files here</p>
                 <p class="text-sm text-gray-500">or</p>
-                <button 
+                <button
                     type="button"
                     class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-200"
                     onclick="document.getElementById('fileInput').click()"
                 >
                     Select Files
                 </button>
-                <input 
-                    type="file" 
-                    id="fileInput" 
-                    multiple 
-                    class="hidden" 
+                <input
+                    type="file"
+                    id="fileInput"
+                    multiple
+                    class="hidden"
                     accept=".pdf,.xlsx,.xls,.csv"
                 >
             </div>
@@ -54,13 +57,15 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 @foreach($salarySheets as $sheet)
+
                 <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">{{ $sheet->user->id }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">{{ $sheet->employee_id }}</td>
+
                     <td class="px-6 py-4 whitespace-nowrap">{{ $sheet->month }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">{{ $sheet->original_filename }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">{{ $sheet->created_at->format('Y-m-d H:i') }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <a href="{{ Storage::url($sheet->file_path) }}" 
+                        <a href="{{ Storage::url($sheet->file_path) }}"
                            class="text-blue-600 hover:text-blue-900"
                            target="_blank">
                             View

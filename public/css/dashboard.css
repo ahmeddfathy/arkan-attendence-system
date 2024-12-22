@@ -302,3 +302,50 @@
     border-radius: 0.5rem;
     background: rgba(14, 165, 233, 0.1);
 }
+
+.container h3 {
+    font-weight: 700;
+    
+}
+
+.card {
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.salary-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 0 auto;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+}
+
+/* Button Styles */
+.btn-primary {
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    border: none;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* Alert Styles */
+.alert-info {
+    background-color: #e7f5ff;
+    border: 1px solid #b6e0fe;
+    color: #0275d8;
+}

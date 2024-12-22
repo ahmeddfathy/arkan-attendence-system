@@ -54,17 +54,17 @@ Route::middleware([
 
 // Employee routes
 Route::middleware(['auth'])->group(function () {
-    Route::resource('/absence-requests', AbsenceRequestController::class);
+
     Route::post('/absence-requests/{absenceRequest}/status', [AbsenceRequestController::class, 'updateStatus'])
         ->name('absence-requests.updateStatus');
-    Route::resource('/permission-requests', PermissionRequestController::class);
+
 });
 
 // Manager routes
 Route::middleware(['auth', 'role:manager'])->group(function () {
 
-+
-    Route::resource('overtime-requests', OverTimeRequestsController::class);
+
+
     Route::patch('/absence-requests/{absenceRequest}/reset-status', [AbsenceRequestController::class, 'resetStatus'])
         ->name('absence-requests.reset-status');
     Route::patch('/absence-requests/{id}/modify', [AbsenceRequestController::class, 'modifyResponse'])
@@ -87,20 +87,25 @@ Route::middleware(['auth', 'role:manager'])->group(function () {
         ->name('overtime-requests.modify');
     Route::patch('/overtime-requests/{id}', [OverTimeRequestsController::class, 'update']);
     Route::delete('/overtime-requests/{overtimeRequest}', [OverTimeRequestsController::class, 'destroy'])->name('overtime-requests.destroy');
-    Route::get('/salary-sheets', [SalarySheetController::class, 'index'])->name('salary-sheets.index');
-    Route::post('/salary-sheets/upload', [SalarySheetController::class, 'upload'])->name('salary-sheets.upload');
-    Route::resource('users', UserController::class);
-    Route::post('user/import', [UserController::class, 'import'])->name('user.import');;
+
+
     Route::get('/attendance', [AttendanceRecordController::class, 'index'])->name('attendance.index');
     Route::post('/attendance/import', [AttendanceRecordController::class, 'import'])->name('attendance.import');
+
+Route::resource('users', UserController::class);
+Route::post('user/import', [UserController::class, 'import'])->name('user.import');;
+Route::resource('/attendances', AttendanceController::class);
+Route::resource('/leaves', LeaveController::class);
+
 });
 
 // Shared routes (Manager & Employee)
 Route::middleware(['auth', 'role:manager,employee'])->group(function () {
     // Attendance
-    Route::resource('attendances', AttendanceController::class);
+    Route::resource('overtime-requests', OverTimeRequestsController::class);
+
     // Leave
-    Route::resource('leaves', LeaveController::class);
+    Route::resource('/absence-requests', AbsenceRequestController::class);
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
@@ -111,20 +116,21 @@ Route::middleware(['auth', 'role:manager,employee'])->group(function () {
         ->name('user.downloadAttendanceReport');
 
 
+        Route::get('/salary-sheet/{userId}/{month}/{filename}', function ($employee_id, $month, $filename) {
+            $user = Auth::user();
+            if ($user->employee_id != $employee_id && $user->role != 'manager') {
+                abort(403, 'Unauthorized access');
+            }
+            $filePath = storage_path("app/private/salary_sheets/{$employee_id}/{$month}/{$filename}");
+            if (!file_exists($filePath)) {
+                abort(404, 'File not found');
+            }
+            return response()->file($filePath);
+        })->middleware('auth');
 
-    Route::get('/salary-sheet/{userId}/{month}/{filename}', function ($userId, $month, $filename) {
-        $user = Auth::user();
-        if ($user->id != $userId && $user->role != 'manager') {
-            abort(403, 'Unauthorized access');
-        }
-        $filePath = storage_path("app/private/salary_sheets/{$userId}/{$month}/{$filename}");
-        if (!file_exists($filePath)) {
-            abort(404, 'File not found');
-        }
-        return response()->file($filePath);
-    })->middleware('auth');
 
 
+    Route::resource('/permission-requests', PermissionRequestController::class);
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::get('/chat/messages/{receiver}', [ChatController::class, 'getMessages']);
     Route::post('/chat/send', [ChatController::class, 'sendMessage']);
@@ -132,3 +138,5 @@ Route::middleware(['auth', 'role:manager,employee'])->group(function () {
     Route::post('/status/update', [OnlineStatusController::class, 'updateStatus']);
     Route::get('/status/user/{userId}', [OnlineStatusController::class, 'getUserStatus']);
 });
+Route::get('/salary-sheets', [SalarySheetController::class, 'index'])->name('salary-sheets.index');
+Route::post('/salary-sheets/upload', [SalarySheetController::class, 'upload'])->name('salary-sheets.upload');

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SalarySheet extends Model
 {
     protected $fillable = [
-        'user_id',
+        'employee_id',
         'month',
         'file_path',
         'original_filename'

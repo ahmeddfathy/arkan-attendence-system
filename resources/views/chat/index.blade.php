@@ -51,7 +51,7 @@
         </div>
 
         <div id="chat-area" class="chat-area d-none">
-            <div class="chat-header">
+            <div class="chat-header" >
                 <div class="chat-contact-info">
                     <div class="contact-avatar">
                         <img src="" alt="Contact" id="contact-avatar">
@@ -63,7 +63,9 @@
                 </div>
             </div>
 
-            <div class="messages-container" id="messages-container"></div>
+            <div class="chat-content">
+                <div class="messages-container" id="messages-container"></div>
+            </div>
 
             <div class="chat-input-area">
                 <form id="message-form">
@@ -92,6 +94,7 @@
 let currentChatId = null;
 
 function loadChat(userId, userName) {
+    document.querySelector('.chat-list').classList.remove('active');
     currentChatId = userId;
     $('#no-chat-selected').addClass('d-none');
     $('#chat-area').removeClass('d-none');
@@ -207,6 +210,9 @@ document.addEventListener('DOMContentLoaded', function () {
     @if($manager)
         loadChat({{ $manager->id }}, '{{ $manager->name }}');
     @endif
+});
+document.querySelector('.chat-sidebar-header').addEventListener('click', function() {
+    document.querySelector('.chat-list').classList.toggle('active');
 });
 </script>
 @endpush

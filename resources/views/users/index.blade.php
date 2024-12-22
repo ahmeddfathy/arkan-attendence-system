@@ -49,31 +49,6 @@
         </button>
     </div>
 
-    <!-- Import Modal -->
-       <!-- Import Modal -->
-       <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="importModalLabel">Import Users</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ route('user.import') }}" method="post" enctype="multipart/form-data">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="fileInput" class="form-label">Choose File</label>
-                            <input type="file" id="fileInput" name="file" class="form-control" required>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Import</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 
 
     <!-- Users Table -->
@@ -141,6 +116,31 @@
         </div>
     </div>
 </div>
+
+   <!-- Import Modal -->
+   <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">Import Users</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('user.import') }}" method="post" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="fileInput" class="form-label">Choose File</label>
+                            <input type="file" id="fileInput" name="file" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Import</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
 
 

@@ -38,27 +38,28 @@ class SalarySheetService
 
     private function processSingleFile(UploadedFile $file): array
     {
-        $userId = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $employee_id = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $month = Carbon::now()->format('Y-m');
         $extension = $file->getClientOriginalExtension();
 
-        $path = "salary_sheets/{$userId}/{$month}";
-        $fileName = "{$userId}_{$month}.{$extension}";
+        $path = "salary_sheets/{$employee_id}/{$month}";
+        $fileName = "{$employee_id}_{$month}.{$extension}";
 
         $filePath = Storage::putFileAs($path, $file, $fileName);
 
         $salarySheet = SalarySheet::create([
-            'user_id' => $userId,
+            'employee_id' => $employee_id,
             'month' => $month,
             'file_path' => $filePath,
             'original_filename' => $file->getClientOriginalName()
         ]);
 
         // Get user and create notification
-        $user = User::findOrFail($userId);
+        $employee = User::where('employee_id', $employee_id)->firstOrFail();
+
 
         // استخدام SalaryNotificationService بدلاً من NotificationService
-        $this->notificationService->createSalarySheetNotification($user, [
+        $this->notificationService->createSalarySheetNotification($employee, [
             'id' => $salarySheet->id,
             'month' => $month,
             'filename' => $fileName
@@ -66,7 +67,7 @@ class SalarySheetService
 
         return [
             'id' => $salarySheet->id,
-            'user_id' => $userId,
+            'employee_id' => $employee_id,
             'month' => $month,
             'filename' => $fileName
         ];
